@@ -33,9 +33,7 @@ fn field_to_string(field: &syn::Field, first: bool) -> Option<syn::LitByteStr> {
     field.clone().ident
         .map(|ident| {
             let mut obj_key_str = format!("\"{}\":", ident);
-            if !first {
-                obj_key_str.insert(0, ',');
-            }
+            obj_key_str.insert(0, if first { '{' } else { ',' });
             syn::LitByteStr::new(obj_key_str.as_bytes(), field.span())
         })
 }
@@ -57,7 +55,6 @@ fn impl_jsonvalue_macro_struct(
         use std::io;
         impl JSONValue for #name {
             fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-                w.write_all(b"{")?;
                 #(
                     w.write_all(#first_name)?;
                     self.#first_field.write_json(w)?;

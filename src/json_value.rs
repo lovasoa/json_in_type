@@ -10,7 +10,7 @@ pub trait JSONValue {
         format!("{}", JSON(self))
     }
     fn to_json_buffer(&self) -> Vec<u8> {
-        let mut buffer = Vec::new();
+        let mut buffer = Vec::with_capacity(512);
         self.write_json(&mut buffer).unwrap();
         buffer
     }

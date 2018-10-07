@@ -24,7 +24,6 @@ impl<T: JSONValue> JSONValue for Vec<(&str, T)> {
 
 
 pub trait JSONObject: JSONValue {
-    #[inline(always)]
     fn write_json_ending<W: io::Write>(&self, f: &mut W) -> io::Result<()>;
 }
 

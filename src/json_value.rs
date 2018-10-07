@@ -4,7 +4,6 @@ use std::fmt::Formatter;
 use std::io;
 
 pub trait JSONValue {
-    #[inline(always)]
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()>;
     fn to_json_string(&self) -> String {
         format!("{}", JSON(self))

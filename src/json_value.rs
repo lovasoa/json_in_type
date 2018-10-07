@@ -8,6 +8,11 @@ pub trait JSONValue {
     fn to_json_string(&self) -> String {
         format!("{}", JSON(self))
     }
+    fn to_json_buffer(&self) -> Vec<u8> {
+        let mut buffer = Vec::new();
+        self.write_json(&mut buffer).unwrap();
+        buffer
+    }
 }
 
 
@@ -50,5 +55,11 @@ impl<T: JSONValue> Display for JSON<T> {
         self.0.write_json(&mut writer)
             .map(|_size| ())
             .map_err(|_err| fmt::Error {})
+    }
+}
+
+impl<T: JSONValue> From<JSON<T>> for Vec<u8> {
+    fn from(json: JSON<T>) -> Self {
+        json.0.to_json_buffer()
     }
 }

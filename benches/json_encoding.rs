@@ -3,19 +3,16 @@ extern crate criterion;
 extern crate json_in_type;
 extern crate serde_json;
 
+use criterion::{Criterion, Fun};
 use json_in_type::*;
 
-use criterion::{Criterion, Fun};
-
 fn encode_json_in_type(n: f64) -> Vec<u8> {
-    let obj = json_object!{
+    let obj = json_object! {
         void: (),
         list: json_list![1,2,3,n],
         hello: "world"
     };
-    let mut buf: Vec<u8> = vec![];
-    obj.write_json(&mut buf).unwrap();
-    buf
+    obj.to_json_buffer()
 }
 
 fn encode_serde(n: f64) -> Vec<u8> {

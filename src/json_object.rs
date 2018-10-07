@@ -24,20 +24,15 @@ impl<T: JSONValue> JSONValue for Vec<(&str, T)> {
 
 
 pub trait JSONObject: JSONValue {
+    #[inline(always)]
     fn write_json_ending<W: io::Write>(&self, f: &mut W) -> io::Result<()>;
 }
 
 
 pub struct JSONObjectEntry<K: JSONString, V: JSONValue, U: JSONObject> {
-    key: K,
-    value: V,
-    next: U,
-}
-
-impl<K: JSONString, V: JSONValue, U: JSONObject> JSONObjectEntry<K, V, U> {
-    pub fn new(key: K, value: V, next: U) -> JSONObjectEntry<K, V, U> {
-        JSONObjectEntry { key, value, next }
-    }
+    pub key: K,
+    pub value: V,
+    pub next: U,
 }
 
 impl<K: JSONString, V: JSONValue, U: JSONObject> JSONObject for JSONObjectEntry<K, V, U> {
@@ -52,6 +47,7 @@ impl<K: JSONString, V: JSONValue, U: JSONObject> JSONObject for JSONObjectEntry<
 }
 
 impl<K: JSONString, V: JSONValue, U: JSONObject> JSONValue for JSONObjectEntry<K, V, U> {
+    #[inline(always)]
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         w.write_all(b"{")?;
         self.key.write_json(w)?;
@@ -64,6 +60,7 @@ impl<K: JSONString, V: JSONValue, U: JSONObject> JSONValue for JSONObjectEntry<K
 pub struct JSONObjectEnd;
 
 impl JSONObject for JSONObjectEnd {
+    #[inline(always)]
     fn write_json_ending<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         w.write_all(b"}")
     }
@@ -78,11 +75,11 @@ impl JSONValue for JSONObjectEnd {
 #[macro_export]
 macro_rules! json_object {
     ($key:ident : $value:expr $(, $keys:ident : $values:expr )* ) => {
-        JSONObjectEntry::new(
-            stringify!($key),
-            $value,
-            json_object!($($keys : $values),*)
-         )
+        JSONObjectEntry{
+            key: stringify!($key),
+            value: $value,
+            next: json_object!($($keys : $values),*)
+         }
     };
     () => { JSONObjectEnd{} };
 }

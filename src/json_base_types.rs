@@ -5,6 +5,7 @@ macro_rules! display_is_json {
     ( $( $json_type:ty ),* ) => {
         $(
             impl JSONValue for $json_type {
+                #[inline(always)]
                 fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
                     write!(w, "{}", self)
                 }

@@ -1,5 +1,5 @@
 [package]
-name = "json-in-type"
+name = "json_in_type"
 version = "0.1.0"
 authors = ["ophir <pere.jobs@gmail.com>"]
 edition = "2018"
@@ -13,9 +13,12 @@ name = "json_in_type"
 path = "src/bin.rs"
 
 [dependencies]
+json_in_type_derive = {path="json_in_type_derive"}
 
 [dev-dependencies]
 criterion = "0.2"
+serde = "1.0"
+serde_derive = "1.0"
 serde_json = "1.0"
 
 [[bench]]

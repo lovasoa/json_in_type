@@ -1,12 +1,12 @@
-use super::json_value::JSONValue;
 use std::io;
+use super::json_value::JSONValue;
 
 macro_rules! display_is_json {
     ( $( $json_type:ty ),* ) => {
         $(
             impl JSONValue for $json_type {
                 fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-                    w.write_all(format!("{}", self).as_bytes())
+                    write!(w, "{}", self)
                 }
             }
         )*

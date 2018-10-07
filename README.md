@@ -14,6 +14,21 @@ fn main() {
         list: json_list![1,2,3],
         hello: "world"
     });
+    /* The type of json_val is:
+    
+    json_in_type::JSON<
+        json_in_type::JSONObjectEntry<
+            &str, (),
+        json_in_type::JSONObjectEntry<
+            &str,
+                json_in_type::JSONListElem<{integer},
+                json_in_type::JSONListElem<{integer},
+                json_in_type::JSONListElem<{integer},
+                json_in_type::JSONListEnd>>>,
+        json_in_type::JSONObjectEntry<
+            &str, &str,
+        json_in_type::JSONObjectEnd>>>>
+    */
     println!("{}", json_val);
 }
 ```

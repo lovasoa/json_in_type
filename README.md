@@ -29,6 +29,10 @@ fn main() {
             &str, &str,
         json_in_type::JSONObjectEnd>>>>
     */
-    println!("{}", json_val);
+
+    assert_eq!(
+        r#"{"void":null,"list":[1,2,3],"hello":"world"}"#,
+        format!("{}", json_val)
+    );
 }
 ```

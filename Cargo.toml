@@ -1,0 +1,15 @@
+[package]
+name = "json-in-type"
+version = "0.1.0"
+authors = ["ophir <pere.jobs@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "json_in_type"
+path = "src/lib.rs"
+
+[[bin]]
+name = "json_in_type"
+path = "src/bin.rs"
+
+[dependencies]

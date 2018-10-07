@@ -13,3 +13,11 @@ name = "json_in_type"
 path = "src/bin.rs"
 
 [dependencies]
+
+[dev-dependencies]
+criterion = "0.2"
+serde_json = "1.0"
+
+[[bench]]
+name = "json_encoding"
+harness = false

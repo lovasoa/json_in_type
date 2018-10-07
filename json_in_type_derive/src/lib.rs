@@ -8,6 +8,7 @@ use self::proc_macro::TokenStream;
 use syn::{
     Data,
     DeriveInput,
+    spanned::Spanned,
 };
 
 #[proc_macro_derive(JSONValue)]
@@ -28,8 +29,15 @@ fn impl_jsonvalue_macro(ast: &DeriveInput) -> TokenStream {
     }
 }
 
-fn field_to_string(field: &syn::Field) -> Option<String> {
-    field.clone().ident.map(|ident| format!("{}", ident))
+fn field_to_string(field: &syn::Field, first: bool) -> Option<syn::LitByteStr> {
+    field.clone().ident
+        .map(|ident| {
+            let mut obj_key_str = format!("\"{}\":", ident);
+            if !first {
+                obj_key_str.insert(0, ',');
+            }
+            syn::LitByteStr::new(obj_key_str.as_bytes(), field.span())
+        })
 }
 
 fn field_to_ident(field: &syn::Field) -> Option<syn::Ident> {
@@ -41,8 +49,8 @@ fn impl_jsonvalue_macro_struct(
     struct_data: &syn::DataStruct,
 ) -> TokenStream {
     let fs = struct_data.fields.clone();
-    let first_name = fs.iter().take(1).flat_map(field_to_string);
-    let names = fs.iter().skip(1).flat_map(field_to_string);
+    let first_name = fs.iter().take(1).flat_map(|f| field_to_string(f, true));
+    let names = fs.iter().skip(1).flat_map(|f| field_to_string(f, false));
     let first_field = fs.iter().take(1).flat_map(field_to_ident);
     let fields = fs.iter().skip(1).flat_map(field_to_ident);
     let gen = quote! {
@@ -51,11 +59,11 @@ fn impl_jsonvalue_macro_struct(
             fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
                 w.write_all(b"{")?;
                 #(
-                    write!(w, "\"{}\":", #first_name)?;
+                    w.write_all(#first_name)?;
                     self.#first_field.write_json(w)?;
                 )*
                 #(
-                    write!(w, ",\"{}\":", #names)?;
+                    w.write_all(#names)?;
                     self.#fields.write_json(w)?;
                 )*
                 w.write_all(b"}")

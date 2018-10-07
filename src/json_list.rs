@@ -1,6 +1,7 @@
 use std::io;
 use super::json_value::JSONValue;
 
+#[inline(always)]
 fn write_json_iterator<J, I, W>(iter: &mut I, w: &mut W) -> io::Result<()>
     where I: Iterator<Item=J>,
           J: JSONValue,
@@ -17,6 +18,7 @@ fn write_json_iterator<J, I, W>(iter: &mut I, w: &mut W) -> io::Result<()>
 }
 
 impl<T: JSONValue> JSONValue for Vec<T> {
+    #[inline(always)]
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         write_json_iterator(&mut self.iter(), w)
     }

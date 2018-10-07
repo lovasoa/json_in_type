@@ -131,7 +131,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
 criterion_group!{
     name = benches;
-    config = Criterion::default();
+    config = Criterion::default().noise_threshold(0.05);
     targets = criterion_benchmark
 }
 criterion_main!(benches);

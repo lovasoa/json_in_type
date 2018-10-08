@@ -24,3 +24,23 @@ fn test_simple_json() {
         obj.to_json_string()
     );
 }
+
+#[allow(dead_code)]
+#[derive(JSONValue)]
+struct WrapperStruct(u8, u8);
+
+#[test]
+fn test_wrapperstruct() {
+    let obj = WrapperStruct(9, 4);
+    assert_eq!("[9,4]", obj.to_json_string());
+}
+
+#[allow(dead_code)]
+#[derive(JSONValue)]
+enum Val { A, B, C }
+
+#[test]
+fn test_enum() {
+    let obj = Val::C;
+    assert_eq!(r#"{"C":true}"#, obj.to_json_string());
+}

@@ -114,8 +114,8 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_functions(
         "encode simple object with derive",
         vec![
-            Fun::new("json_in_type with derive", |b, i| b.iter(|| simple_json_in_type_derive(*i))),
-            Fun::new("serde_json with derive", |b, i| b.iter(|| simple_serde_derive(*i))),
+            Fun::new("json_in_type", |b, i| b.iter(|| simple_json_in_type_derive(*i))),
+            Fun::new("serde_json", |b, i| b.iter(|| simple_serde_derive(*i))),
         ],
         999_999_999.999f64,
     );

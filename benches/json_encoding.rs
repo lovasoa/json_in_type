@@ -6,6 +6,7 @@ extern crate json_in_type_derive;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
 extern crate serde_json;
 
 use criterion::{Criterion, Fun};
@@ -21,7 +22,7 @@ fn simple_json_in_type(n: f64) -> Vec<u8> {
 }
 
 fn simple_serde(n: f64) -> Vec<u8> {
-    let obj = serde_json::json!({
+    let obj = json!({
         "void": null,
         "list": [1., 2., 3., n],
         "hello": "world"
@@ -79,8 +80,7 @@ fn nested_json_in_type(n: u8) -> Vec<u8> {
 }
 
 fn nested_serde(n: u8) -> Vec<u8> {
-    let obj = serde_json::json
-    !({
+    let obj = json!({
         "nested": {
             "nested": {
                 "nested": {

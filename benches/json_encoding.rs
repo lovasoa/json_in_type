@@ -127,6 +127,17 @@ fn criterion_benchmark(c: &mut Criterion) {
         ],
         0,
     );
+    c.bench_functions(
+        "encode 1Mb string",
+        vec![
+            Fun::new("json_in_type",
+                     |b, i: &String| b.iter(|| i.to_json_buffer())),
+            Fun::new("serde_json",
+                     |b, i: &String| b.iter(|| serde_json::to_vec(i).unwrap())),
+        ],
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In vel erat rutrum, tincidunt lorem nullam.\n"
+            .to_string().repeat(10_000),
+    );
 }
 
 criterion_group!{

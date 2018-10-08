@@ -13,6 +13,7 @@ path = "src/bin.rs"
 
 [dependencies]
 json_in_type_derive = {path="json_in_type_derive"}
+ryu-ecmascript = "0.1"
 
 [dev-dependencies]
 criterion = "0.2"

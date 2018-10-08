@@ -2,7 +2,7 @@ use std::io;
 use super::json_string::JSONString;
 use super::json_value::JSONValue;
 
-impl<T: JSONValue> JSONValue for Vec<(&str, T)> {
+impl<'a, T: JSONValue> JSONValue for Vec<(&'a str, T)> {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         w.write_all(b"{")?;
         let len = self.len();

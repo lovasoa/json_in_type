@@ -2,7 +2,6 @@
 name = "json_in_type_derive"
 version = "0.1.0"
 authors = ["ophir <pere.jobs@gmail.com>"]
-edition = "2018"
 
 [lib]
 proc-macro = true

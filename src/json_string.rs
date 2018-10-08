@@ -30,7 +30,7 @@ impl JSONValue for char {
 
 impl JSONString for char {}
 
-impl JSONValue for &str {
+impl<'a> JSONValue for &'a str {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         w.write_all(b"\"")?;
         let mut char_index_to_write = 0;
@@ -46,7 +46,7 @@ impl JSONValue for &str {
     }
 }
 
-impl JSONString for &str {}
+impl<'a> JSONString for &'a str {}
 
 
 impl JSONValue for String {

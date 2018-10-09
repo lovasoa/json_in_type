@@ -2,14 +2,14 @@ use std::io;
 use super::json_value::JSONValue;
 
 #[inline(always)]
-fn json_escaped_char(c: char) -> Option<[u8; 2]> {
+fn json_escaped_char(c: char) -> Option<Vec<u8>> {
     match c {
-        '"' => Some([b'\\', b'"']),
-        '\\' => Some([b'\\', b'\\']),
-        '\n' => Some([b'\\', b'n']),
-        '\r' => Some([b'\\', b'r']),
-        '\t' => Some([b'\\', b't']),
-        '\u{0008}' => Some([b'\\', b'b']),
+        '"' => Some(b"\\\"".to_vec()),
+        '\\' => Some(b"\\\\".to_vec()),
+        '\n' => Some(b"\\n".to_vec()),
+        '\r' => Some(b"\\r".to_vec()),
+        '\t' => Some(b"\\t".to_vec()),
+        x if x < ' ' => Some(format!("\\u{:04x}", x as u32).as_bytes().to_vec()),
         _ => None
     }
 }
@@ -66,10 +66,20 @@ mod tests {
     fn test_chars() {
         assert_eq!("\"x\"", 'x'.to_json_string());
         assert_eq!("\"\\n\"", '\n'.to_json_string());
+        assert_eq!("\"\\\\\"", '\\'.to_json_string());
+        assert_eq!("\"\\u0000\"", '\0'.to_json_string());
+        assert_eq!("\"❤\"", '❤'.to_json_string());
     }
 
     #[test]
-    fn test_string() {
+    fn test_simple_string() {
+        assert_eq!(r#""""#, "".to_json_string());
+        assert_eq!(r#""Hello, world!""#, "Hello, world!".to_json_string());
+        assert_eq!(r#""\t\t\n""#, "\t\t\n".to_json_string());
+    }
+
+    #[test]
+    fn test_complex_string() {
         assert_eq!(
             r#""I ❤️ \"pépé\" \n backslash: \\!!!\n""#,
             "I ❤️ \"pépé\" \n backslash: \\!!!\n".to_json_string()

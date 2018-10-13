@@ -47,8 +47,8 @@ impl<'a> JSONValue for &'a str {
         w.write_all(b"\"")?;
         let bytes = self.as_bytes();
         let mut char_index_to_write = 0;
-        for i in 0..bytes.len() {
-            if let Some(escaped) = json_escaped_char(bytes[i]) {
+        for (i, &c) in bytes.iter().enumerate() {
+            if let Some(escaped) = json_escaped_char(c) {
                 w.write_all(&bytes[char_index_to_write..i])?;
                 escaped.write(w)?;
                 char_index_to_write = i + 1;

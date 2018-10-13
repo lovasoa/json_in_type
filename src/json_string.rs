@@ -1,20 +1,28 @@
 use std::io;
 use super::json_value::JSONValue;
 
+struct EscapeChar(u8);
+
+impl EscapeChar {
+    fn write<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
+        let c = self.0;
+        match c {
+            b'"' => w.write_all(b"\\\""),
+            b'\\' => w.write_all(b"\\\\"),
+            b'\n' => w.write_all(b"\\n"),
+            b'\r' => w.write_all(b"\\r"),
+            b'\t' => w.write_all(b"\\t"),
+            _ => write!(w, "\\u{:04x}", c as u32),
+        }
+    }
+}
+
 #[inline(always)]
-fn json_escaped_char(c: u8) -> Option<Vec<u8>> {
-    if c > 0x20 && c != b'"' && c != b'\\' {
+fn json_escaped_char(c: u8) -> Option<EscapeChar> {
+    if c > 0x1F && c != b'"' && c != b'\\' {
         None
     } else {
-        match c {
-            b'"' => Some(b"\\\"".to_vec()),
-            b'\\' => Some(b"\\\\".to_vec()),
-            b'\n' => Some(b"\\n".to_vec()),
-            b'\r' => Some(b"\\r".to_vec()),
-            b'\t' => Some(b"\\t".to_vec()),
-            x if x < b' ' => Some(format!("\\u{:04x}", x as u32).as_bytes().to_vec()),
-            _ => None
-        }
+        Some(EscapeChar(c))
     }
 }
 
@@ -23,8 +31,8 @@ pub trait JSONString: JSONValue {}
 impl JSONValue for char {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         w.write_all(b"\"")?;
-        if let Some(s) = json_escaped_char(*self as u8) {
-            w.write_all(&s)?;
+        if let Some(escaped) = json_escaped_char(*self as u8) {
+            escaped.write(w)?;
         } else {
             write!(w, "{}", self)?;
         }
@@ -40,9 +48,9 @@ impl<'a> JSONValue for &'a str {
         let bytes = self.as_bytes();
         let mut char_index_to_write = 0;
         for i in 0..bytes.len() {
-            if let Some(s) = json_escaped_char(bytes[i]) {
+            if let Some(escaped) = json_escaped_char(bytes[i]) {
                 w.write_all(&bytes[char_index_to_write..i])?;
-                w.write_all(&s)?;
+                escaped.write(w)?;
                 char_index_to_write = i + 1;
             }
         }

@@ -83,7 +83,11 @@ impl JSONValue for JSONListEnd {
 
 #[macro_export]
 macro_rules! json_list {
-    ($elem:expr $(, $rest:expr )* ) =>
-        { JSONListElem::new($elem, json_list!($($rest),*)) };
-    () => { JSONListEnd{} };
+    ($elem:expr $(, $rest:expr )* ) => {
+        $crate::json_list::JSONListElem::new(
+            $elem,
+            json_list!($($rest),*)
+        )
+    };
+    () => { $crate::json_list::JSONListEnd{} };
 }

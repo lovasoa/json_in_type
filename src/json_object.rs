@@ -75,6 +75,9 @@ impl JSONValue for JSONObjectEnd {
 #[doc(hidden)]
 macro_rules! inlined_json_object {
     (key : $key:ident, value : $value:expr, next : $next:expr) => {{
+        use $crate::json_object::JSONObject;
+        use $crate::JSONValue;
+
         struct InlinedJSONObjectEntry<V: JSONValue, U: JSONObject> {
             value:V,
             next: U
@@ -110,7 +113,7 @@ macro_rules! inlined_json_object {
 
 #[macro_export]
 macro_rules! json_object {
-    () => { JSONObjectEnd{} };
+    () => { $crate::json_object::JSONObjectEnd{} };
     // Literal key
     ($key:ident : $value:expr, $($rest:tt)*) => {
         inlined_json_object!{
@@ -120,7 +123,7 @@ macro_rules! json_object {
          }
     };
     ([$key:expr] : $value:expr, $($rest:tt)*) => {
-        JSONObjectEntry {
+        $crate::json_object::JSONObjectEntry {
             key: $key,
             value: $value,
             next: json_object!($($rest)*)

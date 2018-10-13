@@ -3,10 +3,11 @@ extern crate json_in_type;
 use json_in_type::*;
 
 fn main() {
-    let json_val = JSON(json_object!{
+    let dynamic_key = "hello";
+    let json_val :()= JSON(json_object!{
         void: (),
         list: json_list![1,2,3],
-        hello: "world"
+        [dynamic_key]: "world"
     });
     println!("{}", json_val);
 }

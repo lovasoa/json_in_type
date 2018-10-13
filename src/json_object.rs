@@ -119,8 +119,16 @@ macro_rules! json_object {
             next: json_object!($($rest)*)
          }
     };
+    ([$key:expr] : $value:expr, $($rest:tt)*) => {
+        JSONObjectEntry {
+            key: $key,
+            value: $value,
+            next: json_object!($($rest)*)
+        }
+    };
     // Simply adding a trailing colon
     ($key:ident : $value:expr) => { json_object!($key:$value,) };
+    ([$key:expr] : $value:expr) => { json_object!([$key]:$value,) };
 }
 
 #[cfg(test)]
@@ -154,6 +162,17 @@ mod tests {
         assert_eq!(r#"{"x":{"y":{}}}"#, json_object! {
             x : json_object! {
                 y : json_object!()
+            }
+        }.to_json_string());
+    }
+
+    #[test]
+    fn test_dynamic_keys() {
+        let x = "x";
+        let y = String::from("y");
+        assert_eq!(r#"{"x":{"y":{}}}"#, json_object! {
+            [x] : json_object! {
+                [y] : json_object!()
             }
         }.to_json_string());
     }

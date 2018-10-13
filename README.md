@@ -9,19 +9,19 @@ extern crate json_in_type;
 use json_in_type::*;
 
 fn main() {
-    let json_val = JSON(json_object!{
+    let dynamic_key = "hello";
+    let json_val :()= JSON(json_object!{
         void: (),
         list: json_list![1,2,3],
-        hello: "world"
+        [dynamic_key]: "world"
     });
     /* The type of json_val is:
     
     json_in_type::JSON<
-        json_in_type::JSONObjectEntry<
-            &str, (),
-        json_in_type::JSONObjectEntry<
-            &str,
-                json_in_type::JSONListElem<{integer},
+        main::InlinedJSONObjectEntry<
+            (),
+        main::InlinedJSONObjectEntry<
+            json_in_type::JSONListElem<{integer},
                 json_in_type::JSONListElem<{integer},
                 json_in_type::JSONListElem<{integer},
                 json_in_type::JSONListEnd>>>,

@@ -2,15 +2,19 @@ use std::io;
 use super::json_value::JSONValue;
 
 #[inline(always)]
-fn json_escaped_char(c: char) -> Option<Vec<u8>> {
-    match c {
-        '"' => Some(b"\\\"".to_vec()),
-        '\\' => Some(b"\\\\".to_vec()),
-        '\n' => Some(b"\\n".to_vec()),
-        '\r' => Some(b"\\r".to_vec()),
-        '\t' => Some(b"\\t".to_vec()),
-        x if x < ' ' => Some(format!("\\u{:04x}", x as u32).as_bytes().to_vec()),
-        _ => None
+fn json_escaped_char(c: u8) -> Option<Vec<u8>> {
+    if c > 0x20 && c != b'"' && c != b'\\' {
+        None
+    } else {
+        match c {
+            b'"' => Some(b"\\\"".to_vec()),
+            b'\\' => Some(b"\\\\".to_vec()),
+            b'\n' => Some(b"\\n".to_vec()),
+            b'\r' => Some(b"\\r".to_vec()),
+            b'\t' => Some(b"\\t".to_vec()),
+            x if x < b' ' => Some(format!("\\u{:04x}", x as u32).as_bytes().to_vec()),
+            _ => None
+        }
     }
 }
 
@@ -19,7 +23,7 @@ pub trait JSONString: JSONValue {}
 impl JSONValue for char {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         w.write_all(b"\"")?;
-        if let Some(s) = json_escaped_char(*self) {
+        if let Some(s) = json_escaped_char(*self as u8) {
             w.write_all(&s)?;
         } else {
             write!(w, "{}", self)?;
@@ -33,15 +37,16 @@ impl JSONString for char {}
 impl<'a> JSONValue for &'a str {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         w.write_all(b"\"")?;
+        let bytes = self.as_bytes();
         let mut char_index_to_write = 0;
-        for (i, c) in self.char_indices() {
-            if let Some(s) = json_escaped_char(c) {
-                w.write_all(&self[char_index_to_write..i].as_bytes())?;
+        for i in 0..bytes.len() {
+            if let Some(s) = json_escaped_char(bytes[i]) {
+                w.write_all(&bytes[char_index_to_write..i])?;
                 w.write_all(&s)?;
-                char_index_to_write = i + c.len_utf8();
+                char_index_to_write = i + 1;
             }
         }
-        w.write_all(&self[char_index_to_write..self.len()].as_bytes())?;
+        w.write_all(&bytes[char_index_to_write..])?;
         w.write_all(b"\"")
     }
 }

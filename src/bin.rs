@@ -4,7 +4,7 @@ use json_in_type::*;
 
 fn main() {
     let dynamic_key = "hello";
-    let json_val :()= JSON(json_object!{
+    let json_val = JSON(json_object!{
         void: (),
         list: json_list![1,2,3],
         [dynamic_key]: "world"

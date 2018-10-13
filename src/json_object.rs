@@ -24,7 +24,11 @@ impl<'a, T: JSONValue> JSONValue for Vec<(&'a str, T)> {
 
 
 pub trait JSONObject: JSONValue {
-    fn write_json_ending<W: io::Write>(&self, f: &mut W, prefix: &[u8]) -> io::Result<()>;
+    fn write_json_ending<W: io::Write>(&self, f: &mut W, first: bool) -> io::Result<()>;
+    #[inline]
+    fn write_json_full<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
+        self.write_json_ending(w, true)
+    }
 }
 
 
@@ -36,19 +40,19 @@ pub struct JSONObjectEntry<K: JSONString, V: JSONValue, U: JSONObject> {
 
 impl<K: JSONString, V: JSONValue, U: JSONObject> JSONObject for JSONObjectEntry<K, V, U> {
     #[inline(always)]
-    fn write_json_ending<W: io::Write>(&self, w: &mut W, prefix: &[u8]) -> io::Result<()> {
-        w.write_all(prefix)?;
+    fn write_json_ending<W: io::Write>(&self, w: &mut W, first: bool) -> io::Result<()> {
+        w.write_all(if first { b"{" } else { b"," })?;
         self.key.write_json(w)?;
         w.write_all(b":")?;
         self.value.write_json(w)?;
-        self.next.write_json_ending(w, b",")
+        self.next.write_json_ending(w, false)
     }
 }
 
 impl<K: JSONString, V: JSONValue, U: JSONObject> JSONValue for JSONObjectEntry<K, V, U> {
     #[inline(always)]
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-        self.write_json_ending(w, b"{")
+        self.write_json_full(w)
     }
 }
 
@@ -56,15 +60,52 @@ pub struct JSONObjectEnd;
 
 impl JSONObject for JSONObjectEnd {
     #[inline(always)]
-    fn write_json_ending<W: io::Write>(&self, w: &mut W, _: &[u8]) -> io::Result<()> {
-        w.write_all(b"}")
+    fn write_json_ending<W: io::Write>(&self, w: &mut W, first: bool) -> io::Result<()> {
+        w.write_all(if first { b"{}" } else { b"}" })
     }
 }
 
 impl JSONValue for JSONObjectEnd {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-        w.write_all(b"{}")
+        self.write_json_full(w)
     }
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! inlined_json_object {
+    (key : $key:ident, value : $value:expr, next : $next:expr) => {{
+        struct InlinedJSONObjectEntry<V: JSONValue, U: JSONObject> {
+            value:V,
+            next: U
+        }
+
+        impl<V: JSONValue, U: JSONObject> JSONObject
+            for InlinedJSONObjectEntry<V,U> {
+            #[inline(always)]
+            fn write_json_ending<W: ::std::io::Write>(&self, w: &mut W, first: bool)
+                -> ::std::io::Result<()> {
+                w.write_all(
+                    if first {
+                        concat!("{\"", stringify!($key),"\":")
+                    } else {
+                        concat!(",\"", stringify!($key),"\":")
+                    }.as_bytes()
+                )?;
+                self.value.write_json(w)?;
+                self.next.write_json_ending(w, false)
+            }
+        }
+
+        impl<V: JSONValue, U: JSONObject> JSONValue
+            for InlinedJSONObjectEntry<V,U> {
+            fn write_json<W: ::std::io::Write>(&self, w: &mut W) -> ::std::io::Result<()> {
+                self.write_json_full(w)
+            }
+        }
+
+        InlinedJSONObjectEntry{value:$value, next:$next}
+    }};
 }
 
 #[macro_export]
@@ -72,8 +113,8 @@ macro_rules! json_object {
     () => { JSONObjectEnd{} };
     // Literal key
     ($key:ident : $value:expr, $($rest:tt)*) => {
-        JSONObjectEntry{
-            key: stringify!($key),
+        inlined_json_object!{
+            key: $key,
             value: $value,
             next: json_object!($($rest)*)
          }
@@ -81,7 +122,6 @@ macro_rules! json_object {
     // Simply adding a trailing colon
     ($key:ident : $value:expr) => { json_object!($key:$value,) };
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -12,7 +12,7 @@ impl EscapeChar {
             b'\n' => w.write_all(b"\\n"),
             b'\r' => w.write_all(b"\\r"),
             b'\t' => w.write_all(b"\\t"),
-            _ => write!(w, "\\u{:04x}", c as u32),
+            _ => write!(w, "\\u{:04x}", u32::from(c)),
         }
     }
 }
@@ -25,7 +25,10 @@ fn json_escaped_char(c: u8) -> Option<EscapeChar> {
         Some(EscapeChar(c))
     }
 }
-
+/// Implemented by types that can be serialized to a json string.
+///
+/// Implement this trait for your type if you want to be able to use it as a
+/// key in a json object.
 pub trait JSONString: JSONValue {}
 
 impl JSONValue for char {

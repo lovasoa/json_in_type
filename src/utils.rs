@@ -1,6 +1,6 @@
 use std::fmt;
 use std::io;
-use std:: str;
+use std::str;
 
 pub struct FormatterWriter<'a, 'b:'a>(pub &'a mut fmt::Formatter<'b>);
 

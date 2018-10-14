@@ -2,6 +2,7 @@ use std::fmt;
 use std::io;
 use std::str;
 
+/// Converts a Formatter to a Writer
 pub struct FormatterWriter<'a, 'b:'a>(pub &'a mut fmt::Formatter<'b>);
 
 impl<'a, 'b:'a> io::Write for FormatterWriter<'a, 'b> {

@@ -40,7 +40,7 @@ fn main() {
 ## Performance
 
 This library is generally faster than SERDE.
-Here are detailed comparison results on different json serialization tasks realized on an [i5-6500 CPU @ 3.20GHz](https://ark.intel.com/products/88184/Intel-Core-i5-6500-Processor-6M-Cache-up-to-3-60-GHz-).
+Here are detailed comparison results on different json serialization tasks realized on an  AMD Ryzen 5 1600X.
 [See detailed benchmark results.](https://lovasoa.github.io/json-in-types/docs/criterion/report/)
 
 ### Encoding 8 nested json objects using a rust macro

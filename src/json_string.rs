@@ -12,7 +12,7 @@ impl EscapeChar {
             b'\n' => w.write_all(b"\\n"),
             b'\r' => w.write_all(b"\\r"),
             b'\t' => w.write_all(b"\\t"),
-            _ => write!(w, "\\u{:04x}", c as u32),
+            _ => write!(w, "\\u{:04x}", u32::from(c)),
         }
     }
 }

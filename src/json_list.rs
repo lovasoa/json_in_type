@@ -81,6 +81,18 @@ impl JSONValue for JSONListEnd {
     }
 }
 
+/// Create a static json list that can be serialized very fast.
+/// Returns an object implementing JSONValue
+///
+/// # Examples
+/// Create a list containing objects of different types.
+/// ```
+/// use json_in_type::*;
+///
+/// let my_list = json_list![1,true,"hello"];
+///
+/// assert_eq!("[1,true,\"hello\"]", my_list.to_json_string());
+/// ```
 #[macro_export]
 macro_rules! json_list {
     ($elem:expr $(, $rest:expr )* ) => {

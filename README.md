@@ -46,7 +46,7 @@ fn main() {
 
 This library is generally faster than SERDE.
 Here are detailed comparison results on different json serialization tasks realized on an  AMD Ryzen 5 1600X.
-[See detailed benchmark results.](https://lovasoa.github.io/json-in-types/docs/criterion/report/)
+[See detailed benchmark results.](https://lovasoa.github.io/json_in_type/docs/criterion/report/)
 
 ### Encoding 8 nested json objects using a rust macro
 
@@ -56,7 +56,7 @@ Here are detailed comparison results on different json serialization tasks reali
 ```
 
 #### Benchmark result
-![nested json objects comparison](https://lovasoa.github.io/json-in-types/docs/criterion/encode%20nested%20objects/report/violin.svg)
+![nested json objects comparison](https://lovasoa.github.io/json_in_type/docs/criterion/encode%20nested%20objects/report/violin.svg)
 
 ### Encoding a very simple json object using a rust macro
 
@@ -70,7 +70,7 @@ Here are detailed comparison results on different json serialization tasks reali
 ```
 
 #### Benchmark result
-![simple object](https://lovasoa.github.io/json-in-types/docs/criterion/encode%20simple%20object%20with%20macro/report/violin.svg)
+![simple object](https://lovasoa.github.io/json_in_type/docs/criterion/encode%20simple%20object%20with%20macro/report/violin.svg)
 
 ### Encoding a very simple json object using `#[derive(...)]`
 
@@ -95,4 +95,4 @@ struct MyObject {
 ```
 
 #### Benchmark result
-![simple object](https://lovasoa.github.io/json-in-types/docs/criterion/encode%20simple%20object%20with%20derive/report/violin.svg)
+![simple object](https://lovasoa.github.io/json_in_type/docs/criterion/encode%20simple%20object%20with%20derive/report/violin.svg)

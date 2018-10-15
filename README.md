@@ -1,5 +1,10 @@
-# json-in-types
-Fast json encoder in rust, that encodes the structure of JSON values in their types 
+# json_in_type
+
+Fast json encoder in rust, that does more at compile time, and less at run time.
+One notable feature is the ability to encode the structure of JSON objects in their type.
+
+This allows for a very compact representation of objects in memory, and up to an order of magnitude better performance
+than the traditional approach (used by serde's `json!` marco, for instance) where JSON objects are stored as HashMaps.  
 
 ## Exemple use
 

@@ -1,27 +1,78 @@
+use std::collections::HashMap;
+use std::hash::Hash;
 use std::io;
 use super::json_string::JSONString;
 use super::json_value::JSONValue;
 
-impl<'a, T: JSONValue> JSONValue for Vec<(&'a str, T)> {
-    fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-        w.write_all(b"{")?;
-        let len = self.len();
-        if len > 0 {
-            for (key, value) in self[0..len - 1].iter() {
-                key.write_json(w)?;
-                w.write_all(b":")?;
-                value.write_json(w)?;
-                w.write_all(b",")?;
-            }
-            let (key, value) = &self[len - 1];
-            key.write_json(w)?;
-            w.write_all(b":")?;
-            value.write_json(w)?;
+/// Write a single key-value pair
+fn write_object_entry<W, K, V>(w: &mut W, key: &K, value: &V) -> io::Result<()>
+    where W: io::Write,
+          K: JSONString,
+          V: JSONValue {
+    key.write_json(w)?;
+    w.write_all(b":")?;
+    value.write_json(w)
+}
+
+/// Write a list of key-value pairs to a writer as a json object
+fn write_object<'a, W, K, V, I>(w: &mut W, iter: &mut I) -> io::Result<()>
+    where W: io::Write,
+          K: JSONString,
+          V: JSONValue,
+          V: 'a,
+          K: 'a,
+          I: Iterator<Item=(&'a K, &'a V)> {
+    w.write_all(b"{")?;
+    if let Some((key, value)) = iter.next() {
+        write_object_entry(w, key, value)?;
+        for (key, value) in iter {
+            w.write_all(b",")?;
+            write_object_entry(w, key, value)?;
         }
-        w.write_all(b"}")
+    }
+    w.write_all(b"}")
+}
+
+/// A struct used to wrap another type and make it serializable as a json object
+/// The other type has to be able to yield (key, value) pairs by implementing IntoIterator.
+///
+/// # Examples
+///
+/// Serialize a vec as a json object
+///
+/// ```
+/// use json_in_type::json_object::ToJSONObject;
+/// use json_in_type::JSONValue;
+///
+/// let my_obj = ToJSONObject(vec![("x", 1), ("y", 2)]);
+///
+/// assert_eq!("{\"x\":1,\"y\":2}", my_obj.to_json_string());
+/// ```
+pub struct ToJSONObject<K, V, I>(pub I)
+    where K: JSONString,
+          V: JSONValue,
+          for<'a> &'a I: IntoIterator<Item=&'a (K, V)>;
+
+impl<K, V, I> JSONValue for ToJSONObject<K, V, I>
+    where K: JSONString,
+          V: JSONValue,
+          for<'a> &'a I: IntoIterator<Item=&'a (K, V)>
+{
+    fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
+        let mut iter = (&self.0)
+            .into_iter()
+            .map(|(k, v)| (k, v)); // Convert a borrowed tuple to a tuple of borrowed values
+        write_object(w, &mut iter)
     }
 }
 
+
+/// Serialize a HashMap to a JSON object. The property order is not guaranteed.
+impl<K: JSONString + Eq + Hash, V: JSONValue> JSONValue for HashMap<K, V> {
+    fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
+        write_object(w, &mut self.iter())
+    }
+}
 
 pub trait JSONObject: JSONValue {
     fn write_json_ending<W: io::Write>(&self, f: &mut W, first: bool) -> io::Result<()>;
@@ -32,6 +83,9 @@ pub trait JSONObject: JSONValue {
 }
 
 
+/// A JSON object stored as a static linked list.
+/// This is a generic structure that specializes at compile-time
+/// to a structure whose type stores the exact shape of the object.
 pub struct JSONObjectEntry<K: JSONString, V: JSONValue, U: JSONObject> {
     pub key: K,
     pub value: V,
@@ -56,6 +110,9 @@ impl<K: JSONString, V: JSONValue, U: JSONObject> JSONValue for JSONObjectEntry<K
     }
 }
 
+/// An empty JSON object. This is a Zero Sized Type.
+/// It just serves to mark the end of an object in its type,
+/// but takes no space in memory at runtime.
 pub struct JSONObjectEnd;
 
 impl JSONObject for JSONObjectEnd {
@@ -178,5 +235,18 @@ mod tests {
                 [y] : json_object!()
             }
         }.to_json_string());
+    }
+
+    #[test]
+    fn test_hashmap() {
+        let mut map = HashMap::new();
+        map.insert("x", 1);
+        map.insert("y", 2);
+        // The order in which the keys are serialized is not guaranteed
+        let expected = vec![
+            r#"{"x":1,"y":2}"#,
+            r#"{"y":2,"x":1}"#
+        ];
+        assert!(expected.contains(&&map.to_json_string()[..]));
     }
 }

@@ -1,5 +1,10 @@
-# json-in-types
-Fast json encoder in rust, that encodes the structure of JSON values in their types 
+# json_in_type
+
+Fast json encoder in rust, that does more at compile time, and less at run time.
+One notable feature is the ability to encode the structure of JSON objects in their type.
+
+This allows for a very compact representation of objects in memory, and up to an order of magnitude better performance
+than the traditional approach (used by serde's `json!` marco, for instance) where JSON objects are stored as HashMaps.  
 
 ## Exemple use
 
@@ -40,8 +45,8 @@ fn main() {
 ## Performance
 
 This library is generally faster than SERDE.
-Here are detailed comparison results on different json serialization tasks realized on an [i5-6500 CPU @ 3.20GHz](https://ark.intel.com/products/88184/Intel-Core-i5-6500-Processor-6M-Cache-up-to-3-60-GHz-).
-[See detailed benchmark results.](https://lovasoa.github.io/json-in-types/docs/criterion/report/)
+Here are detailed comparison results on different json serialization tasks realized on an  AMD Ryzen 5 1600X.
+[See detailed benchmark results.](https://lovasoa.github.io/json_in_type/docs/criterion/report/)
 
 ### Encoding 8 nested json objects using a rust macro
 
@@ -51,7 +56,7 @@ Here are detailed comparison results on different json serialization tasks reali
 ```
 
 #### Benchmark result
-![nested json objects comparison](https://lovasoa.github.io/json-in-types/docs/criterion/encode%20nested%20objects/report/violin.svg)
+![nested json objects comparison](https://lovasoa.github.io/json_in_type/docs/criterion/encode%20nested%20objects/report/violin.svg)
 
 ### Encoding a very simple json object using a rust macro
 
@@ -65,7 +70,7 @@ Here are detailed comparison results on different json serialization tasks reali
 ```
 
 #### Benchmark result
-![simple object](https://lovasoa.github.io/json-in-types/docs/criterion/encode%20simple%20object%20with%20macro/report/violin.svg)
+![simple object](https://lovasoa.github.io/json_in_type/docs/criterion/encode%20simple%20object%20with%20macro/report/violin.svg)
 
 ### Encoding a very simple json object using `#[derive(...)]`
 
@@ -90,4 +95,4 @@ struct MyObject {
 ```
 
 #### Benchmark result
-![simple object](https://lovasoa.github.io/json-in-types/docs/criterion/encode%20simple%20object%20with%20derive/report/violin.svg)
+![simple object](https://lovasoa.github.io/json_in_type/docs/criterion/encode%20simple%20object%20with%20derive/report/violin.svg)

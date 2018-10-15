@@ -81,7 +81,7 @@ impl JSONValue for JSONListEnd {
     }
 }
 
-/// Create a static json list that can be serialized very fast.
+/// Creates a static json list that can be serialized very fast.
 /// Returns an object implementing JSONValue
 ///
 /// # Examples

@@ -168,6 +168,51 @@ macro_rules! inlined_json_object {
     }};
 }
 
+/// Creates a static json object that can be serialized very fast.
+/// Returns an object implementing JSONValue
+/// 
+/// The macro takes a comma-separated list of key-value pairs.
+/// Keys can be written litterally, or surrounded by brackets (`[key]`)
+/// to reference external variables.
+/// Values are expression of a type implementing JSONValue.
+///
+/// # Examples
+///
+/// ### Create a simple json object.
+/// ```
+/// use json_in_type::*;
+///
+/// let my_obj = json_object!{
+///     hello: "world"
+/// };
+///
+/// assert_eq!(r#"{"hello":"world"}"#, my_obj.to_json_string());
+/// ```
+///
+/// ### Reference external variables
+/// ```
+/// use json_in_type::*;
+///
+/// let x = "hello";
+/// let my_obj = json_object!{
+///     [x]: "world", // The trailing comma is ok
+/// };
+///
+/// assert_eq!(r#"{"hello":"world"}"#, my_obj.to_json_string());
+/// ```
+///
+/// ### Compute keys dynamically
+/// ```
+/// use json_in_type::*;
+///
+/// let x = "hello";
+/// let my_obj = json_object!{
+///     [x]: "world",
+///     [[x, "_suffix"].concat()]: 42
+/// };
+///
+/// assert_eq!(r#"{"hello":"world","hello_suffix":42}"#, my_obj.to_json_string());
+/// ```
 #[macro_export]
 macro_rules! json_object {
     () => { $crate::json_object::JSONObjectEnd{} };

@@ -33,7 +33,7 @@ fn write_object<'a, W, K, V, I>(w: &mut W, iter: &mut I) -> io::Result<()>
     w.write_all(b"}")
 }
 
-/// A struct used to wrap another type and make it serializable as a json object
+/// A struct used to wrap another type and make it serializable as a json object.
 /// The other type has to be able to yield (key, value) pairs by implementing IntoIterator.
 ///
 /// # Examples

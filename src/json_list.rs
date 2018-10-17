@@ -24,6 +24,20 @@ impl<T: JSONValue> JSONValue for Vec<T> {
     }
 }
 
+/// A struct used to wrap another type and make it serializable as a json list.
+///
+/// The other type has to be able to yield values by implementing IntoIterator.
+///
+/// # Examples
+/// ### Serialize a slice as JSON
+/// ```
+/// use json_in_type::json_list::ToJSONList;
+/// use json_in_type::JSONValue;
+///
+/// let slice : [u8; 3] = [42,42,42];
+///
+/// assert_eq!("[42,42,42]", ToJSONList(slice).to_json_string());
+/// ```
 pub struct ToJSONList<T: JSONValue, U>(pub U)
     where for<'a> &'a U: IntoIterator<Item=&'a T>;
 
@@ -37,7 +51,6 @@ impl<T: JSONValue, U> JSONValue for ToJSONList<T, U>
 pub trait JSONList: JSONValue {
     fn write_json_ending<W: io::Write>(&self, w: &mut W) -> io::Result<()>;
 }
-
 
 pub struct JSONListElem<T: JSONValue, U: JSONList> {
     elem: T,

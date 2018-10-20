@@ -1,3 +1,5 @@
+//! Serialization to JSON objects like `{"x":1,"y":null}`
+
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::io;
@@ -189,6 +191,20 @@ macro_rules! inlined_json_object {
 /// assert_eq!(r#"{"hello":"world"}"#, my_obj.to_json_string());
 /// ```
 ///
+/// ### Shorthand property names
+/// It is common to create a json object from a set of variables,
+/// using the variable names as keys and the contents of the variables as values.
+/// ```
+/// use json_in_type::*;
+///
+/// let x = "hello";
+/// let y = 42;
+/// let z = true;
+/// let my_obj = json_object!{ x, y, z };
+///
+/// assert_eq!(r#"{"x":"hello","y":42,"z":true}"#, my_obj.to_json_string());
+/// ```
+///
 /// ### Reference external variables
 /// ```
 /// use json_in_type::*;
@@ -212,20 +228,6 @@ macro_rules! inlined_json_object {
 /// };
 ///
 /// assert_eq!(r#"{"hello":"world","hello_suffix":42}"#, my_obj.to_json_string());
-/// ```
-///
-/// ### Shorthand property names
-/// It is common to create a json object from a set of variables,
-/// using the variable names as keys and the contents of the variables as values.
-/// ```
-/// use json_in_type::*;
-///
-/// let x = "hello";
-/// let y = 42;
-/// let z = true;
-/// let my_obj = json_object!{ x, y, z };
-///
-/// assert_eq!(r#"{"x":"hello","y":42,"z":true}"#, my_obj.to_json_string());
 /// ```
 #[macro_export]
 macro_rules! json_object {

@@ -1,3 +1,5 @@
+//! Useful tools when working with the types in this crate
+
 use std::fmt;
 use std::io;
 use std::str;

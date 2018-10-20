@@ -1,3 +1,5 @@
+//! Serialization to from numbers, booleans, and nil
+
 use std::io;
 use super::json_value::JSONValue;
 extern crate ryu_ecmascript;

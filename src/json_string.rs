@@ -1,3 +1,5 @@
+//! Serialization to JSON strings like `"hello world \n"`
+
 extern crate simd;
 
 use self::simd::u8x16;

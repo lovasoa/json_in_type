@@ -1,3 +1,5 @@
+//! Serialization to JSON lists like `[0,true,"x"]`
+
 use std::cell::RefCell;
 use std::io;
 use super::json_value::JSONValue;

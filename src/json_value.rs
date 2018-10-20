@@ -1,3 +1,8 @@
+//! The main module of the json_in_type crate.
+//!
+//! It contains its core abstraction, [JSONValue](trait.JSONValue.html), that represents
+//! a value that can be serialized to json.
+
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;

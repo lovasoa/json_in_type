@@ -14,6 +14,7 @@ path = "src/bin.rs"
 [dependencies]
 json_in_type_derive = {path="json_in_type_derive"}
 ryu-ecmascript = "0.1"
+simd = "0.2.3"
 
 [dev-dependencies]
 criterion = "0.2"

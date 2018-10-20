@@ -61,19 +61,27 @@ fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
     let space = u8x16::splat(b' ');
     let quote = u8x16::splat(b'"');
     let slash = u8x16::splat(b'\\');
-    for chunk_bytes in bytes.chunks(16) {
-        if chunk_bytes.len() == 16 {
+    let chunk_size = 16;
+    let mut char_index_to_write = 0;
+    let mut current_index = 0;
+    for chunk_bytes in bytes.chunks(chunk_size) {
+        let current_chunk_len = chunk_bytes.len();
+        if current_chunk_len == chunk_size {
             let chunk = u8x16::load(chunk_bytes, 0);
             let is_raw = (chunk.ge(space) & chunk.ne(quote) & chunk.ne(slash)).all();
-            if is_raw {
-                w.write_all(chunk_bytes)?;
-            } else {
+            if !is_raw {
+                w.write_all(&bytes[char_index_to_write..current_index])?;
                 write_json_nosimd(chunk_bytes, w)?;
+                char_index_to_write = current_index + chunk_size;
             }
         } else {
+            w.write_all(&bytes[char_index_to_write..current_index])?;
             write_json_nosimd(chunk_bytes, w)?;
+            char_index_to_write = current_index + current_chunk_len;
         }
+        current_index += current_chunk_len;
     }
+    w.write_all(&bytes[char_index_to_write..])?;
     Ok(())
 }
 
@@ -127,6 +135,17 @@ mod tests {
             r#""I ❤️ \"pépé\" \n backslash: \\!!!\n""#,
             "I ❤️ \"pépé\" \n backslash: \\!!!\n".to_json_string()
         );
+    }
+
+    #[test]
+    fn short_strings_of_increasing_length() {
+        for i in 0..128 {
+            let xs = String::from("x").repeat(i);
+            assert_eq!(format!("\"{}\"", xs), xs.to_json_string());
+
+            let newlines = String::from("\n").repeat(i);
+            assert_eq!(format!("\"{}\"", newlines.replace('\n', "\\n")), newlines.to_json_string());
+        }
     }
 
     #[test]

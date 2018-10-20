@@ -66,23 +66,19 @@ fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
     let mut current_index = 0;
     for chunk_bytes in bytes.chunks(chunk_size) {
         let current_chunk_len = chunk_bytes.len();
+        let mut needs_write = true;
         if current_chunk_len == chunk_size {
             let chunk = u8x16::load(chunk_bytes, 0);
-            let is_raw = (chunk.ge(space) & chunk.ne(quote) & chunk.ne(slash)).all();
-            if !is_raw {
-                w.write_all(&bytes[char_index_to_write..current_index])?;
-                write_json_nosimd(chunk_bytes, w)?;
-                char_index_to_write = current_index + chunk_size;
-            }
-        } else {
+            needs_write = !(chunk.ge(space) & chunk.ne(quote) & chunk.ne(slash)).all();
+        }
+        if needs_write {
             w.write_all(&bytes[char_index_to_write..current_index])?;
             write_json_nosimd(chunk_bytes, w)?;
             char_index_to_write = current_index + current_chunk_len;
         }
         current_index += current_chunk_len;
     }
-    w.write_all(&bytes[char_index_to_write..])?;
-    Ok(())
+    w.write_all(&bytes[char_index_to_write..])
 }
 
 fn write_json_nosimd<W: io::Write>(bytes: &[u8], w: &mut W) -> io::Result<()> {

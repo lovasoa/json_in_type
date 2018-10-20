@@ -77,6 +77,9 @@ impl<T: JSONValue> JSONValue for Vec<T> {
 ///                 .map(|(i, contents)| json_object!{line:i+1, contents:contents});
 ///
 /// RefCell::new(json_lines).write_json(&mut output_file);
+///
+/// # let expected_bytes = r#"[{"line":1,"contents":"a line of text"},{"line":2,"contents":"another line of text"}]"#;
+/// # assert_eq!(expected_bytes, ::std::str::from_utf8(&output_file).unwrap());
 /// ```
 impl<T: JSONValue, I: Iterator<Item=T>> JSONValue for RefCell<I> {
     #[inline]

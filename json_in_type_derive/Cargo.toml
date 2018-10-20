@@ -2,6 +2,10 @@
 name = "json_in_type_derive"
 version = "0.1.0"
 authors = ["ophir <pere.jobs@gmail.com>"]
+description = "procedural macros for json_in_type"
+license-file = "../LICENSE"
+homepage = "https://lovasoa.github.io/json_in_type/"
+repository = "https://github.com/lovasoa/json_in_type"
 
 [lib]
 proc-macro = true

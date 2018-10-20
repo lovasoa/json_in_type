@@ -3,9 +3,12 @@ name = "json_in_type"
 description = "a library for fast json serialization"
 version = "0.1.0"
 authors = ["ophir <pere.jobs@gmail.com>"]
-license-file = "LICENSE"
+license = "BSD-2-Clause"
 homepage = "https://lovasoa.github.io/json_in_type/"
 repository = "https://github.com/lovasoa/json_in_type"
+readme = "README.md"
+categories = ["encoding"]
+keywords = ["json", "serialization"]
 
 [lib]
 name = "json_in_type"

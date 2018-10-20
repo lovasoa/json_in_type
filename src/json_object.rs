@@ -213,9 +213,31 @@ macro_rules! inlined_json_object {
 ///
 /// assert_eq!(r#"{"hello":"world","hello_suffix":42}"#, my_obj.to_json_string());
 /// ```
+///
+/// ### Shorthand property names
+/// It is common to create a json object from a set of variables,
+/// using the variable names as keys and the contents of the variables as values.
+/// ```
+/// use json_in_type::*;
+///
+/// let x = "hello";
+/// let y = 42;
+/// let z = true;
+/// let my_obj = json_object!{ x, y, z };
+///
+/// assert_eq!(r#"{"x":"hello","y":42,"z":true}"#, my_obj.to_json_string());
+/// ```
 #[macro_export]
 macro_rules! json_object {
     () => { $crate::json_object::JSONObjectEnd{} };
+    // A key that references a variable of the same name
+    ($key:ident, $($rest:tt)*) => {
+        inlined_json_object!{
+            key: $key,
+            value: $key,
+            next: json_object!($($rest)*)
+         }
+    };
     // Literal key
     ($key:ident : $value:expr, $($rest:tt)*) => {
         inlined_json_object!{
@@ -224,6 +246,7 @@ macro_rules! json_object {
             next: json_object!($($rest)*)
          }
     };
+    // The key is an expression in square brackets
     ([$key:expr] : $value:expr, $($rest:tt)*) => {
         $crate::json_object::JSONObjectEntry {
             key: $key,
@@ -234,6 +257,7 @@ macro_rules! json_object {
     // Simply adding a trailing colon
     ($key:ident : $value:expr) => { json_object!($key:$value,) };
     ([$key:expr] : $value:expr) => { json_object!([$key]:$value,) };
+    ($key:ident) => { json_object!($key,) };
 }
 
 #[cfg(test)]

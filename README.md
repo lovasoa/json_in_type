@@ -14,10 +14,12 @@ extern crate json_in_type;
 use json_in_type::*;
 
 fn main() {
+    let void = ();
+    let list = json_list![1,2,3];
     let dynamic_key = "hello";
+    
     let json_val = JSON(json_object!{
-        void: (),
-        list: json_list![1,2,3],
+        void, list,
         [dynamic_key]: "world"
     });
     /* The type of json_val is:

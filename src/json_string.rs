@@ -1,3 +1,6 @@
+extern crate simd;
+
+use self::simd::u8x16;
 use std::io;
 use super::json_value::JSONValue;
 
@@ -48,18 +51,42 @@ impl JSONString for char {}
 impl<'a> JSONValue for &'a str {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         w.write_all(b"\"")?;
-        let bytes = self.as_bytes();
-        let mut char_index_to_write = 0;
-        for (i, &c) in bytes.iter().enumerate() {
-            if let Some(escaped) = json_escaped_char(c) {
-                w.write_all(&bytes[char_index_to_write..i])?;
-                escaped.write(w)?;
-                char_index_to_write = i + 1;
-            }
-        }
-        w.write_all(&bytes[char_index_to_write..])?;
+        write_json_simd(self, w)?;
         w.write_all(b"\"")
     }
+}
+
+fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
+    let bytes = s.as_bytes();
+    let space = u8x16::splat(b' ');
+    let quote = u8x16::splat(b'"');
+    let slash = u8x16::splat(b'\\');
+    for chunk_bytes in bytes.chunks(16) {
+        if chunk_bytes.len() == 16 {
+            let chunk = u8x16::load(chunk_bytes, 0);
+            let is_raw = (chunk.ge(space) & chunk.ne(quote) & chunk.ne(slash)).all();
+            if is_raw {
+                w.write_all(chunk_bytes)?;
+            } else {
+                write_json_nosimd(chunk_bytes, w)?;
+            }
+        } else {
+            write_json_nosimd(chunk_bytes, w)?;
+        }
+    }
+    Ok(())
+}
+
+fn write_json_nosimd<W: io::Write>(bytes: &[u8], w: &mut W) -> io::Result<()> {
+    let mut char_index_to_write = 0;
+    for (i, &c) in bytes.iter().enumerate() {
+        if let Some(escaped) = json_escaped_char(c) {
+            w.write_all(&bytes[char_index_to_write..i])?;
+            escaped.write(w)?;
+            char_index_to_write = i + 1;
+        }
+    }
+    w.write_all(&bytes[char_index_to_write..])
 }
 
 impl<'a> JSONString for &'a str {}
@@ -100,5 +127,31 @@ mod tests {
             r#""I ❤️ \"pépé\" \n backslash: \\!!!\n""#,
             "I ❤️ \"pépé\" \n backslash: \\!!!\n".to_json_string()
         );
+    }
+
+    #[test]
+    fn long_ascii_string() {
+        let s = String::from("x").repeat(7919);
+        assert_eq!(format!("\"{}\"", s), s.to_json_string());
+    }
+
+    #[test]
+    fn long_nonascii_string() {
+        let s = String::from("\u{2a6a5}").repeat(7919);
+        assert_eq!(format!("\"{}\"", s), s.to_json_string());
+    }
+
+    #[test]
+    fn long_mixed_string() {
+        let source = String::from("0123456789abcdef0123456789abcdef\0").repeat(7919);
+        let target = source.replace('\0', "\\u0000");
+        assert_eq!(format!("\"{}\"", target), source.to_json_string());
+    }
+
+    #[test]
+    fn many_backslashes() {
+        let n = 7919;
+        let s = String::from("\\").repeat(n);
+        assert_eq!(format!("\"{}\"", s.repeat(2)), s.to_json_string());
     }
 }

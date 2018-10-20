@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["JSONListElem",""],["JSONListEnd",""],["ToJSONList",""]],"trait":[["JSONList",""]]});
+initSidebarItems({"struct":[["JSONListElem",""],["JSONListEnd",""],["ToJSONList","A struct used to wrap another type and make it serializable as a json list."]],"trait":[["JSONList",""]]});

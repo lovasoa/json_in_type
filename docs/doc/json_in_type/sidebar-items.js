@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["json_list",""],["json_object",""]],"mod":[["json_base_types",""],["json_list",""],["json_object",""],["json_string",""],["json_value",""],["utils",""]]});
+initSidebarItems({"macro":[["json_list","Creates a static json list that can be serialized very fast. Returns an object implementing JSONValue"],["json_object","Creates a static json object that can be serialized very fast. Returns an object implementing JSONValue"]],"mod":[["json_base_types",""],["json_list",""],["json_object",""],["json_string",""],["json_value",""],["utils",""]]});

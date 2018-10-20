@@ -32,3 +32,6 @@ serde_json = "1.0"
 [[bench]]
 name = "json_encoding"
 harness = false
+
+[badges]
+travis-ci = { repository = "lovasoa/json_in_type", branch = "master" }

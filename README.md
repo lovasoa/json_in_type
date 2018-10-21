@@ -54,7 +54,7 @@ Here are detailed comparison results on different json serialization tasks reali
 We use serde's
 [`json!`](https://docs.serde.rs/serde_json/macro.json.html)
 and json_in_type's
-[`json_object`](https://docs.rs/json_in_type/0.1.2/json_in_type/macro.json_object.html)
+[`json_object!`](https://docs.rs/json_in_type/0.1.2/json_in_type/macro.json_object.html)
 macro to encode a nested json object.
 
 #### Encoded object

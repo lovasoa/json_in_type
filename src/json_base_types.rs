@@ -49,9 +49,33 @@ impl JSONValue for () {
     }
 }
 
+/// A JSON value representing the value `true`
+/// This is a Zero-Sized type. It takes zero bytes in memory at runtime.
+pub struct JSONtrue;
+impl JSONValue for JSONtrue {
+    #[inline]
+    fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
+        w.write_all(b"true")
+    }
+}
+
+/// A JSON value representing the value `false`
+/// This is a Zero-Sized type. It takes zero bytes in memory at runtime.
+pub struct JSONfalse;
+impl JSONValue for JSONfalse {
+    #[inline]
+    fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
+        w.write_all(b"false")
+    }
+}
+
 impl JSONValue for bool {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-        w.write_all(if *self {b"true"} else {b"false"})
+        if *self {
+            JSONtrue.write_json(w)
+        } else {
+            JSONfalse.write_json(w)
+        }
     }
 }
 

@@ -5,6 +5,7 @@ use std::hash::Hash;
 use std::io;
 use super::json_string::JSONString;
 use super::json_value::JSONValue;
+use std::hash::BuildHasher;
 
 /// Write a single key-value pair
 fn write_object_entry<W, K, V>(w: &mut W, key: &K, value: &V) -> io::Result<()>
@@ -70,7 +71,7 @@ impl<K, V, I> JSONValue for ToJSONObject<K, V, I>
 
 
 /// Serialize a HashMap to a JSON object. The property order is not guaranteed.
-impl<K: JSONString + Eq + Hash, V: JSONValue> JSONValue for HashMap<K, V> {
+impl<K: JSONString + Eq + Hash, V: JSONValue, S: BuildHasher> JSONValue for HashMap<K, V, S> {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         write_object(w, &mut self.iter())
     }

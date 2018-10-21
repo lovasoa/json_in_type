@@ -7,9 +7,9 @@ fn main() {
     let heterogeneous_list = json_list![1,2,3,(),5];
     let dynamic_key = "hello";
 
-    let json_val = JSON(json_object!{
+    let json_val = json_object!{
         is_awesome, heterogeneous_list,
         [dynamic_key]: "world"
-    });
-    println!("{}", json_val);
+    };
+    println!("{}", JSON(json_val));
 }

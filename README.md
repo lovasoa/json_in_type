@@ -18,28 +18,27 @@ fn main() {
     let list = json_list![1,2,3];
     let dynamic_key = "hello";
     
-    let json_val = JSON(json_object!{
+    let json_val = json_object!{
         void, list,
         [dynamic_key]: "world"
-    });
+    };
     /* The type of json_val is:
     
-    json_in_type::JSON<
         main::InlinedJSONObjectEntry<
             (),
         main::InlinedJSONObjectEntry<
             json_in_type::JSONListElem<{integer},
-                json_in_type::JSONListElem<{integer},
-                json_in_type::JSONListElem<{integer},
-                json_in_type::JSONListEnd>>>,
+            json_in_type::JSONListElem<{integer},
+            json_in_type::JSONListElem<{integer},
+            json_in_type::JSONListEnd>>>,
         json_in_type::JSONObjectEntry<
             &str, &str,
-        json_in_type::JSONObjectEnd>>>>
+        json_in_type::JSONObjectEnd>>>
     */
 
     assert_eq!(
         r#"{"void":null,"list":[1,2,3],"hello":"world"}"#,
-        format!("{}", json_val)
+        json_val.to_json_string()
     );
 }
 ```
@@ -52,7 +51,16 @@ Here are detailed comparison results on different json serialization tasks reali
 
 ### Encoding 8 nested json objects using a rust macro
 
+We use serde's
+[`json!`](https://docs.serde.rs/serde_json/macro.json.html)
+and json_in_type's
+[`json_object`](https://docs.rs/json_in_type/0.1.2/json_in_type/macro.json_object.html)
+macro to encode a nested json object.
+
 #### Encoded object
+We encode a JSON structure composed of 8 nested objects, each of 
+which contains a single key, that is known at compile time.
+The last nested object contains an integer *n* that is not known at compile time.
 ```json
 {"nested":{"nested":{"nested":{"nested":{"nested":{"nested":{"nested":{"nested":{"value":n}}}}}}}}}
 ```
@@ -98,3 +106,10 @@ struct MyObject {
 
 #### Benchmark result
 ![simple object](https://lovasoa.github.io/json_in_type/docs/criterion/encode%20simple%20object%20with%20derive/report/violin.svg)
+
+## External links
+
+ * docs.rs hosts this crate's [api documentation](https://docs.rs/json_in_type).
+    * documentation for [the `json_object!` macro](https://docs.rs/json_in_type/0.1.2/json_in_type/macro.json_object.html)
+    * documentation for [the `JSONValue` trait](https://docs.rs/json_in_type/0.1.2/json_in_type/json_value/trait.JSONValue.html)
+ * You can see [json_in_type on crates.io](https://crates.io/crates/json_in_type).

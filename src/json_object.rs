@@ -172,12 +172,13 @@ macro_rules! inlined_json_object {
 }
 
 /// Creates a static json object that can be serialized very fast.
-/// Returns an object implementing JSONValue
+/// Returns an object implementing [JSONValue](trait.JSONValue.html).
 /// 
 /// The macro takes a comma-separated list of key-value pairs.
-/// Keys can be written litterally, or surrounded by brackets (`[key]`)
+/// Keys can be written literally, or surrounded by brackets (`[key]`)
 /// to reference external variables.
-/// Values are expression of a type implementing JSONValue.
+///
+/// Values must be expressions of a type implementing JSONValue.
 ///
 /// # Examples
 ///

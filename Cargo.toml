@@ -20,7 +20,7 @@ name = "json_in_type"
 path = "src/bin.rs"
 
 [dependencies]
-json_in_type_derive = {path="json_in_type_derive", version="0.1.0"}
+json_in_type_derive = {path="json_in_type_derive", version="0.1"}
 ryu-ecmascript = "0.1"
 simd = "0.2.3"
 itoa = {version="0.4", features=["i128"]}

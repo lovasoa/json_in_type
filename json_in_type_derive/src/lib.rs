@@ -1,7 +1,7 @@
 //! This module provides a procedural macro to derive JSONValue for custom structs.
 //!
 //! # Examples
-//! ```ignore
+//! ```
 //! extern crate json_in_type;
 //! #[macro_use] extern crate json_in_type_derive;
 //! use json_in_type::JSONValue;

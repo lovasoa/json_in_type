@@ -112,4 +112,5 @@ struct MyObject {
  * docs.rs hosts this crate's [api documentation](https://docs.rs/json_in_type).
     * documentation for [the `json_object!` macro](https://docs.rs/json_in_type/0.1.2/json_in_type/macro.json_object.html)
     * documentation for [the `JSONValue` trait](https://docs.rs/json_in_type/0.1.2/json_in_type/json_value/trait.JSONValue.html)
+ * You can automatically derive the `JSONValue` trait for your type using the [json_in_type_derive crate](https://docs.rs/json_in_type_derive)
  * You can see [json_in_type on crates.io](https://crates.io/crates/json_in_type).

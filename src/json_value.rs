@@ -10,6 +10,9 @@ use std::io;
 use super::utils;
 
 /// A trait implemented by types that can be serialized to JSON
+///
+/// This trait can be derived for custom structs using
+/// [json_in_type_derive](https://docs.rs/json_in_type_derive/)
 pub trait JSONValue {
     /// Write the object as json to the given writer
     ///

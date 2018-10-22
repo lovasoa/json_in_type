@@ -6,6 +6,7 @@ description = "procedural macros for json_in_type"
 license-file = "../LICENSE"
 homepage = "https://lovasoa.github.io/json_in_type/"
 repository = "https://github.com/lovasoa/json_in_type"
+readme = "README.md"
 
 [lib]
 proc-macro = true
@@ -13,3 +14,6 @@ proc-macro = true
 [dependencies]
 syn = "0.14.4"
 quote = "0.6.3"
+
+[dev-dependencies]
+json_in_type = "0.1"

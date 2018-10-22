@@ -21,7 +21,7 @@ fn write_obj_good(value: f32) -> String {
 }
 ```
 
-## Exemple use
+## Example use
 
 ```rust
 extern crate json_in_type;

@@ -1,3 +1,28 @@
+//! This module provides a procedural macro to derive JSONValue for custom structs.
+//!
+//! # Examples
+//! ```
+//! extern crate json_in_type;
+//! #[macro_use] extern crate json_in_type_derive;
+//! use json_in_type::JSONValue;
+//!
+//! #[derive(JSONValue)]
+//! struct MyObject {
+//!     void: (),
+//!     list: Vec<u8>,
+//!     hello: String,
+//! }
+//!
+//! let obj = MyObject {
+//!     void: (),
+//!     list: vec![1, 2, 3],
+//!     hello: String::from("world"),
+//! };
+//! assert_eq!(
+//!     r#"{"void":null,"list":[1,2,3],"hello":"world"}"#,
+//!     obj.to_json_string()
+//! );
+//! ```
 #![recursion_limit = "128"]
 extern crate proc_macro;
 #[macro_use]
@@ -11,6 +36,7 @@ use syn::{
     spanned::Spanned
 };
 
+/// Derive JSONValue for a structure
 #[proc_macro_derive(JSONValue)]
 pub fn jsonvalue_macro_derive(input: TokenStream) -> TokenStream {
     // Construct a representation of Rust code as a syntax tree

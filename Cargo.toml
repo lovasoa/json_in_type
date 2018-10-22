@@ -1,7 +1,15 @@
 [package]
 name = "json_in_type"
-version = "0.1.0"
+description = "a library for fast json serialization"
+version = "0.1.8"
 authors = ["ophir <pere.jobs@gmail.com>"]
+license = "BSD-2-Clause"
+homepage = "https://lovasoa.github.io/json_in_type/"
+repository = "https://github.com/lovasoa/json_in_type"
+readme = "README.md"
+categories = ["encoding"]
+keywords = ["json", "serialization"]
+documentation = "https://docs.rs/json_in_type"
 
 [lib]
 name = "json_in_type"
@@ -12,16 +20,20 @@ name = "json_in_type"
 path = "src/bin.rs"
 
 [dependencies]
-json_in_type_derive = {path="json_in_type_derive"}
 ryu-ecmascript = "0.1"
 simd = "0.2.3"
+itoa = {version="0.4", features=["i128"]}
 
 [dev-dependencies]
 criterion = "0.2"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
+json_in_type_derive = {path="json_in_type_derive", version="0.1"}
 
 [[bench]]
 name = "json_encoding"
 harness = false
+
+[badges]
+travis-ci = { repository = "lovasoa/json_in_type", branch = "master" }

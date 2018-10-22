@@ -1,3 +1,5 @@
+//! Serialization to JSON lists like `[0,true,"x"]`
+
 use std::cell::RefCell;
 use std::io;
 use super::json_value::JSONValue;
@@ -159,7 +161,7 @@ impl JSONValue for JSONListEnd {
 }
 
 /// Creates a static json list that can be serialized very fast.
-/// Returns an object implementing JSONValue
+/// Returns an object implementing JSONValue.
 ///
 /// # Examples
 /// Create a list containing objects of different types.
@@ -170,13 +172,58 @@ impl JSONValue for JSONListEnd {
 ///
 /// assert_eq!("[1,true,\"hello\"]", my_list.to_json_string());
 /// ```
+///
+/// Create a list containing special zero-size json values
+/// ```
+/// use json_in_type::*;
+///
+/// let my_list = json_list![ true, false, null, null ];
+///
+/// assert_eq!("[true,false,null,null]", my_list.to_json_string());
+/// assert_eq!(0, ::std::mem::size_of_val(&my_list))
+/// ```
 #[macro_export]
 macro_rules! json_list {
-    ($elem:expr $(, $rest:expr )* ) => {
+    (null $($tt:tt)* ) => { json_list![() $($tt)*] };
+    (true $($tt:tt)* ) => { json_list![$crate::json_base_types::JSONtrue $($tt)*] };
+    (false $($tt:tt)* ) => { json_list![$crate::json_base_types::JSONfalse $($tt)*] };
+
+    ($elem:expr , $($rest:tt)* ) => {
         $crate::json_list::JSONListElem::new(
             $elem,
-            json_list!($($rest),*)
+            json_list!($($rest)*)
         )
     };
+    ($elem:expr) => { json_list![ $elem, ] };
     () => { $crate::json_list::JSONListEnd{} };
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn empty() {
+        assert_eq!("[]", json_list![].to_json_string());
+    }
+
+    #[test]
+    fn should_be_zero_sized() {
+        assert_eq!(0, ::std::mem::size_of_val(&json_list![]));
+        assert_eq!(0, ::std::mem::size_of_val(&json_list![null, null, null]));
+    }
+
+    #[test]
+    fn singe_element() {
+        assert_eq!("[1]", json_list![1].to_json_string());
+        assert_eq!("[1]", json_list![1,].to_json_string());
+    }
+
+    #[test]
+    fn multiple_elements() {
+        assert_eq!("[1,2]", json_list![1,2].to_json_string());
+        assert_eq!("[1,2]", json_list![1,2,].to_json_string());
+        assert_eq!("[1,2,3,4,5]", json_list![1,2,3,4,5].to_json_string());
+    }
 }

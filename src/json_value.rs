@@ -1,3 +1,8 @@
+//! The main module of the json_in_type crate.
+//!
+//! It contains its core abstraction, [JSONValue](trait.JSONValue.html), that represents
+//! a value that can be serialized to json.
+
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -5,6 +10,9 @@ use std::io;
 use super::utils;
 
 /// A trait implemented by types that can be serialized to JSON
+///
+/// This trait can be derived for custom structs using
+/// [json_in_type_derive](https://docs.rs/json_in_type_derive/)
 pub trait JSONValue {
     /// Write the object as json to the given writer
     ///
@@ -21,7 +29,15 @@ pub trait JSONValue {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()>;
 
     /// Returns the object formatted as a json string
-    fn to_json_string(&self) -> String { JSON(self).to_string() }
+    ///
+    /// # Panics
+    /// If you implement JSONValue on your own types and emit invalid UTF-8
+    /// in write_json. If you use the implementations of JSONValue provided
+    /// in this library, this function will never panic.
+    fn to_json_string(&self) -> String {
+        // This is safe because the bytes we emit are all valid UTF-8
+        String::from_utf8(self.to_json_buffer()).unwrap()
+    }
 
     /// Returns a buffer containing the bytes of a json representation of the object
     fn to_json_buffer(&self) -> Vec<u8> {

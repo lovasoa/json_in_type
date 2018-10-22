@@ -8,16 +8,16 @@ than the traditional approach (used by serde's `json!` marco, for instance) wher
 
 The goal of this library is to be as close as possible to the performance
 and memory footprint you would get by writing the json by hand in your source code
-and using string formatting to insert you dynamic values.
+and using string formatting to insert your dynamic values.
 
 ```rust
-fn write_obj_bad(value: i32) -> String { 
+fn write_obj_bad(value: f32) -> String { 
     format!("{\"value\":{}}", value)
 }
 
-// Safer, more readable, but equivalent and not less efficient :
-fn write_obj_good(value: i32) -> String {
-    (json_object!{value}).to_json_string()
+// Safer, but equivalent and not less efficient :
+fn write_obj_good(value: f32) -> String {
+    ( json_object! { value } ).to_json_string()
 }
 ```
 

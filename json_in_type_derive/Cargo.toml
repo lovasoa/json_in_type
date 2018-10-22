@@ -1,6 +1,6 @@
 [package]
 name = "json_in_type_derive"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["ophir <pere.jobs@gmail.com>"]
 description = "procedural macros for json_in_type"
 license-file = "../LICENSE"

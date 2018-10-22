@@ -15,7 +15,7 @@ use json_in_type::*;
 
 fn main() {
     let void = ();
-    let list = json_list![1,2,3];
+    let list = json_list![42u8, true];
     let dynamic_key = "hello";
     
     let json_val = json_object!{
@@ -24,20 +24,19 @@ fn main() {
     };
     /* The type of json_val is:
     
-        main::InlinedJSONObjectEntry<
+        InlinedJSONObjectEntry<
             (),
-        main::InlinedJSONObjectEntry<
-            json_in_type::JSONListElem<{integer},
-            json_in_type::JSONListElem<{integer},
-            json_in_type::JSONListElem<{integer},
-            json_in_type::JSONListEnd>>>,
-        json_in_type::JSONObjectEntry<
+        InlinedJSONObjectEntry<
+            JSONListElem<u8,
+            JSONListElem<JSONtrue,
+            JSONListEnd>>>,
+        JSONObjectEntry<
             &str, &str,
-        json_in_type::JSONObjectEnd>>>
+        JSONObjectEnd>>>
     */
 
     assert_eq!(
-        r#"{"void":null,"list":[1,2,3],"hello":"world"}"#,
+        r#"{"void":null,"list":[42,true],"hello":"world"}"#,
         json_val.to_json_string()
     );
 }

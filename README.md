@@ -4,7 +4,22 @@ Fast json encoder in rust, that does more at compile time, and less at run time.
 One notable feature is the ability to encode the structure of JSON objects in their type.
 
 This allows for a very compact representation of objects in memory, and up to an order of magnitude better performance
-than the traditional approach (used by serde's `json!` marco, for instance) where JSON objects are stored as HashMaps.  
+than the traditional approach (used by serde's `json!` marco, for instance) where JSON objects are stored in maps.
+
+The goal of this library is to be as close as possible to the performance
+and memory footprint you would get by writing the json by hand in your source code
+and using string formatting to insert you dynamic values.
+
+```rust
+fn write_obj_bad(value: i32) -> String { 
+    format!("{\"value\":{}}", value)
+}
+
+// Safer, more readable, but equivalent and not less efficient :
+fn write_obj_good(value: i32) -> String {
+    (json_object!{value}).to_json_string()
+}
+```
 
 ## Exemple use
 
@@ -42,6 +57,35 @@ fn main() {
 }
 ```
 
+## Memory use
+The generated types have a very small memory footprint at runtime.
+You don't pay for the json structure, only for what you put in it !
+
+In the next example, we store the following json structure on only two bytes:
+```json
+{
+  "result_count" : 1,
+  "errors" : null,
+  "results" : [
+    {"answer":42, "ok":true}
+   ]
+}
+```
+
+```rust
+fn test_memory_size() {
+    let (result_count, answer) = (1u8, 42u8);
+    let my_val = json_object! {
+        result_count,
+        errors: null,
+        results: json_list![
+            json_object!{answer, ok: true}
+        ]
+    };
+    // my_val weighs only two bytes, because we stored only 2 u8 in it
+    assert_eq!(2, ::std::mem::size_of_val(&my_val));
+}
+```
 ## Performance
 
 This library is generally faster than SERDE.

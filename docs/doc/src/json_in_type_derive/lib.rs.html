@@ -146,7 +146,58 @@
 <span id="146">146</span>
 <span id="147">147</span>
 <span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
 </pre><pre class="rust ">
+<span class="doccomment">//! This module provides a procedural macro to derive JSONValue for custom structs.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! # Examples</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//! extern crate json_in_type;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!use json_in_type::JSONValue;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!#[derive(JSONValue)]</span>
+<span class="doccomment">//!struct MyObject {</span>
+<span class="doccomment">//!    void: (),</span>
+<span class="doccomment">//!    list: Vec&lt;u8&gt;,</span>
+<span class="doccomment">//!    hello: String,</span>
+<span class="doccomment">//!}</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!let obj = MyObject {</span>
+<span class="doccomment">//!    void: (),</span>
+<span class="doccomment">//!    list: vec![1, 2, 3],</span>
+<span class="doccomment">//!    hello: String::from(&quot;world&quot;),</span>
+<span class="doccomment">//!};</span>
+<span class="doccomment">//!assert_eq!(</span>
+<span class="doccomment">//!    r#&quot;{&quot;void&quot;:null,&quot;list&quot;:[1,2,3],&quot;hello&quot;:&quot;world&quot;}&quot;#,</span>
+<span class="doccomment">//!    obj.to_json_string()</span>
+<span class="doccomment">//!);</span>
+<span class="doccomment">//! ```</span>
 <span class="attribute">#![<span class="ident">recursion_limit</span> <span class="op">=</span> <span class="string">&quot;128&quot;</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">proc_macro</span>;
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
@@ -160,6 +211,7 @@
     <span class="ident">spanned</span>::<span class="ident">Spanned</span>
 };
 
+<span class="doccomment">/// Derive JSONValue for a structure</span>
 <span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">JSONValue</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">jsonvalue_macro_derive</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="ident">TokenStream</span> {
     <span class="comment">// Construct a representation of Rust code as a syntax tree</span>

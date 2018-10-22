@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["jsonvalue_macro_derive",""]]});
+initSidebarItems({"fn":[["jsonvalue_macro_derive","Derive JSONValue for a structure"]]});

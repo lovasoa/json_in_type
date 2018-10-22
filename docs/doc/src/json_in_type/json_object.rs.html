@@ -319,8 +319,35 @@
 <span id="319">319</span>
 <span id="320">320</span>
 <span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
 </pre><pre class="rust ">
+<span class="doccomment">//! Serialization to JSON objects like `{&quot;x&quot;:1,&quot;y&quot;:null}`</span>
+
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">hash</span>::<span class="ident">BuildHasher</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">hash</span>::<span class="ident">Hash</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">json_string</span>::<span class="ident">JSONString</span>;
@@ -390,7 +417,7 @@
 
 
 <span class="doccomment">/// Serialize a HashMap to a JSON object. The property order is not guaranteed.</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">JSONString</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span>, <span class="ident">V</span>: <span class="ident">JSONValue</span><span class="op">&gt;</span> <span class="ident">JSONValue</span> <span class="kw">for</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">JSONString</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span>, <span class="ident">V</span>: <span class="ident">JSONValue</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span><span class="op">&gt;</span> <span class="ident">JSONValue</span> <span class="kw">for</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">write_json</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">io</span>::<span class="ident">Write</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">w</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="ident">write_object</span>(<span class="ident">w</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">iter</span>())
     }
@@ -491,12 +518,15 @@
 }
 
 <span class="doccomment">/// Creates a static json object that can be serialized very fast.</span>
-<span class="doccomment">/// Returns an object implementing JSONValue</span>
+<span class="doccomment">/// Returns an object implementing [JSONValue](trait.JSONValue.html).</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// The macro takes a comma-separated list of key-value pairs.</span>
-<span class="doccomment">/// Keys can be written litterally, or surrounded by brackets (`[key]`)</span>
-<span class="doccomment">/// to reference external variables.</span>
-<span class="doccomment">/// Values are expression of a type implementing JSONValue.</span>
+<span class="doccomment">/// Keys can be written literally, or surrounded by brackets (`[key]`)</span>
+<span class="doccomment">/// to reference external variables. A value can be omitted, in which</span>
+<span class="doccomment">/// case the the key name must be the name of a variable currently in scope,</span>
+<span class="doccomment">/// from which the value will be taken.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Values must be expressions of a type implementing JSONValue.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
@@ -509,6 +539,20 @@
 <span class="doccomment">/// };</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(r#&quot;{&quot;hello&quot;:&quot;world&quot;}&quot;#, my_obj.to_json_string());</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ### Shorthand property names</span>
+<span class="doccomment">/// It is common to create a json object from a set of variables,</span>
+<span class="doccomment">/// using the variable names as keys and the contents of the variables as values.</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use json_in_type::*;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let x = &quot;hello&quot;;</span>
+<span class="doccomment">/// let y = 42;</span>
+<span class="doccomment">/// let z = true;</span>
+<span class="doccomment">/// let my_obj = json_object!{ x, y, z };</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// assert_eq!(r#&quot;{&quot;x&quot;:&quot;hello&quot;,&quot;y&quot;:42,&quot;z&quot;:true}&quot;#, my_obj.to_json_string());</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ### Reference external variables</span>
@@ -535,31 +579,13 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(r#&quot;{&quot;hello&quot;:&quot;world&quot;,&quot;hello_suffix&quot;:42}&quot;#, my_obj.to_json_string());</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Shorthand property names</span>
-<span class="doccomment">/// It is common to create a json object from a set of variables,</span>
-<span class="doccomment">/// using the variable names as keys and the contents of the variables as values.</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use json_in_type::*;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let x = &quot;hello&quot;;</span>
-<span class="doccomment">/// let y = 42;</span>
-<span class="doccomment">/// let z = true;</span>
-<span class="doccomment">/// let my_obj = json_object!{ x, y, z };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(r#&quot;{&quot;x&quot;:&quot;hello&quot;,&quot;y&quot;:42,&quot;z&quot;:true}&quot;#, my_obj.to_json_string());</span>
-<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">json_object</span> {
     () <span class="op">=&gt;</span> { <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">json_object</span>::<span class="ident">JSONObjectEnd</span>{} };
-    <span class="comment">// A key that references a variable of the same name</span>
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">ident</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
-        <span class="macro">inlined_json_object</span><span class="macro">!</span>{
-            <span class="ident">key</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>,
-            <span class="ident">value</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>,
-            <span class="ident">next</span>: <span class="macro">json_object</span><span class="macro">!</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>)<span class="kw-2">*</span>)
-         }
-    };
+    <span class="comment">// A null value</span>
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">ident</span> : <span class="ident">null</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> { <span class="macro">json_object</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span> : (), $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>)<span class="kw-2">*</span>) };
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">ident</span> : <span class="bool-val">true</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> { <span class="macro">json_object</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span> : <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">json_base_types</span>::<span class="ident">JSONtrue</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>)<span class="kw-2">*</span>) };
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">ident</span> : <span class="bool-val">false</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> { <span class="macro">json_object</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span> : <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">json_base_types</span>::<span class="ident">JSONfalse</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>)<span class="kw-2">*</span>) };
     <span class="comment">// Literal key</span>
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">ident</span> : <span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">expr</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
         <span class="macro">inlined_json_object</span><span class="macro">!</span>{
@@ -576,7 +602,10 @@
             <span class="ident">next</span>: <span class="macro">json_object</span><span class="macro">!</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>)<span class="kw-2">*</span>)
         }
     };
+    <span class="comment">// A key that references a variable of the same name</span>
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">ident</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> { <span class="macro">json_object</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span> : <span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>)<span class="kw-2">*</span>) };
     <span class="comment">// Simply adding a trailing colon</span>
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">ident</span> : <span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> { <span class="macro">json_object</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>,) };
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">ident</span> : <span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> { <span class="macro">json_object</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>,) };
     ([<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">expr</span>] : <span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> { <span class="macro">json_object</span><span class="macro">!</span>([<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>]:<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>,) };
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> { <span class="macro">json_object</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>,) };
@@ -639,6 +668,25 @@
             <span class="string">r#&quot;{&quot;y&quot;:2,&quot;x&quot;:1}&quot;#</span>
         ];
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">expected</span>.<span class="ident">contains</span>(<span class="op">&amp;&amp;</span><span class="ident">map</span>.<span class="ident">to_json_string</span>()[..]));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_zero_size</span>() {
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">size_of_val</span>;
+        <span class="comment">// We should pay only for what we use.</span>
+        <span class="comment">// If we have no reference to external values, the resulting object should take 0 bytes</span>
+        <span class="comment">// in memory</span>
+        <span class="kw">let</span> <span class="ident">json_obj</span> <span class="op">=</span> <span class="macro">json_object</span><span class="macro">!</span> {
+            <span class="ident">null</span>: <span class="ident">null</span>,
+            <span class="ident">nested</span>: <span class="macro">json_object</span><span class="macro">!</span> {
+                <span class="ident">also_null</span>: (),
+                <span class="ident">bool</span> : <span class="bool-val">true</span>,
+                <span class="ident">deeper</span>: <span class="macro">json_object</span><span class="macro">!</span> {
+                    <span class="ident">other_bool</span>: <span class="bool-val">false</span>
+                }
+            }
+        };
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0</span>, <span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">json_obj</span>));
     }
 }
 </pre>

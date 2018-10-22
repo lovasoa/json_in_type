@@ -1,46 +1,65 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `json_in_type` crate."><meta name="keywords" content="rust, rustlang, rust-lang, json_in_type"><title>json_in_type - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate json_in_type</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'json_in_type', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/json_in_type/lib.rs.html#1-9' title='goto source code'>[src]</a></span><span class='in-band'>Crate <a class="mod" href=''>json_in_type</a></span></h1><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
-<table><tr><td><code>pub use self::json_value::<a class="struct" href="../json_in_type/json_value/struct.JSON.html" title="struct json_in_type::json_value::JSON">JSON</a>;</code></td></tr><tr><td><code>pub use self::json_value::<a class="trait" href="../json_in_type/json_value/trait.JSONValue.html" title="trait json_in_type::json_value::JSONValue">JSONValue</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `json_in_type` crate."><meta name="keywords" content="rust, rustlang, rust-lang, json_in_type"><title>json_in_type - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate json_in_type</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'json_in_type', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/json_in_type/lib.rs.html#1-27' title='goto source code'>[src]</a></span><span class='in-band'>Crate <a class="mod" href=''>json_in_type</a></span></h1><div class='docblock'><p><strong>json_in_type</strong> is a library for <em>very fast</em> <a href="http://json.org/">JSON</a> serialization.
+It does only serialization, not parsing.</p>
+<h1 id="principles" class="section-header"><a href="#principles">Principles</a></h1>
+<p>This library is fast at runtime because it tries to do more at compile time,
+using rust's powerful type system, and macros.</p>
+<p>The base idea when starting to write this library was that a json object
+with a number of properties that is known at compile-time can be efficiently
+stored in an ad-hoc type, that will have a compact representation in memory,
+and will be serialized much faster than a HashMap.</p>
+<h1 id="how-to-use" class="section-header"><a href="#how-to-use">How to use</a></h1>
+<p>This crate has two main macros, <a href="macro.json_object.html"><code>json_object!</code></a>,
+and <a href="macro.json_list.html"><code>json_list!</code></a>.
+Use them to create <a href="trait.JSONValue.html">json values</a>, that you can then serialize.</p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub use self::json_value::<a class="trait" href="../json_in_type/json_value/trait.JSONValue.html" title="trait json_in_type::json_value::JSONValue">JSONValue</a>;</code></td></tr><tr><td><code>pub use self::json_value::<a class="struct" href="../json_in_type/json_value/struct.JSON.html" title="struct json_in_type::json_value::JSON">JSON</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
 <table>
                        <tr class=' module-item'>
                            <td><a class="mod" href="json_base_types/index.html"
                                   title='mod json_in_type::json_base_types'>json_base_types</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>Serialization to from numbers, booleans, and nil</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="mod" href="json_list/index.html"
                                   title='mod json_in_type::json_list'>json_list</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>Serialization to JSON lists like <code>[0,true,&quot;x&quot;]</code></p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="mod" href="json_object/index.html"
                                   title='mod json_in_type::json_object'>json_object</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>Serialization to JSON objects like <code>{&quot;x&quot;:1,&quot;y&quot;:null}</code></p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="mod" href="json_string/index.html"
                                   title='mod json_in_type::json_string'>json_string</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>Serialization to JSON strings like <code>&quot;hello world \n&quot;</code></p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="mod" href="json_value/index.html"
                                   title='mod json_in_type::json_value'>json_value</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>The main module of the json_in_type crate.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="mod" href="utils/index.html"
                                   title='mod json_in_type::utils'>utils</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>Useful tools when working with the types in this crate</p>
+
                            </td>
                        </tr></table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
 <table>
@@ -49,7 +68,7 @@
                                   title='macro json_in_type::json_list'>json_list</a></td>
                            <td class='docblock-short'>
                                 <p>Creates a static json list that can be serialized very fast.
-Returns an object implementing JSONValue</p>
+Returns an object implementing JSONValue.</p>
 
                            </td>
                        </tr>
@@ -58,7 +77,7 @@ Returns an object implementing JSONValue</p>
                                   title='macro json_in_type::json_object'>json_object</a></td>
                            <td class='docblock-short'>
                                 <p>Creates a static json object that can be serialized very fast.
-Returns an object implementing JSONValue</p>
+Returns an object implementing <a href="trait.JSONValue.html">JSONValue</a>.</p>
 
                            </td>
                        </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../";window.currentCrate = "json_in_type";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

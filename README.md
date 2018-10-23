@@ -12,7 +12,7 @@ and using string formatting to insert your dynamic values.
 
 ```rust
 fn write_obj_bad(value: f32) -> String { 
-    format!("{\"value\":{}}", value)
+    format!("{{\"value\":{}}}", value)
 }
 
 // Safer, but equivalent and not less efficient :

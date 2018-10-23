@@ -1,10 +1,10 @@
-//! Serialization to from numbers, booleans, and nil
+//! Serialization of numbers, booleans, and null
 
 extern crate ryu_ecmascript;
 extern crate itoa;
 
 use std::io;
-use super::json_value::JSONValue;
+use super::JSONValue;
 
 macro_rules! impl_json_for_int {
     ( $( $json_type:ty ),* ) => {

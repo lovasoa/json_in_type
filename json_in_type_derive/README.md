@@ -2,7 +2,7 @@
 
 This crate defines a derive mode macro allowing the
 automatic derivation of the
-[JSONValue](https://docs.rs/json_in_type/0.1.2/json_in_type/json_value/trait.JSONValue.html)
+[JSONValue](https://docs.rs/json_in_type/latest/json_in_type/trait.JSONValue.html)
 trait for custom data structures.
 
 # Example

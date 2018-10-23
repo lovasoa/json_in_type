@@ -4,7 +4,7 @@ extern crate simd;
 
 use self::simd::u8x16;
 use std::io;
-use super::json_value::JSONValue;
+use super::JSONValue;
 
 struct EscapeChar(u8);
 

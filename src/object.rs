@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use std::hash::BuildHasher;
 use std::hash::Hash;
 use std::io;
-use super::json_string::JSONString;
-use super::json_value::JSONValue;
+use super::string::JSONString;
+use super::JSONValue;
 
 /// Write a single key-value pair
 fn write_object_entry<W, K, V>(w: &mut W, key: &K, value: &V) -> io::Result<()>
@@ -44,7 +44,7 @@ fn write_object<'a, W, K, V, I>(w: &mut W, iter: &mut I) -> io::Result<()>
 /// Serialize a vec as a json object
 ///
 /// ```
-/// use json_in_type::json_object::ToJSONObject;
+/// use json_in_type::object::ToJSONObject;
 /// use json_in_type::JSONValue;
 ///
 /// let my_obj = ToJSONObject(vec![("x", 1), ("y", 2)]);
@@ -135,7 +135,7 @@ impl JSONValue for JSONObjectEnd {
 #[doc(hidden)]
 macro_rules! inlined_json_object {
     (key : $key:ident, value : $value:expr, next : $next:expr) => {{
-        use $crate::json_object::JSONObject;
+        use $crate::object::JSONObject;
         use $crate::JSONValue;
 
         struct InlinedJSONObjectEntry<V: JSONValue, U: JSONObject> {
@@ -172,7 +172,7 @@ macro_rules! inlined_json_object {
 }
 
 /// Creates a static json object that can be serialized very fast.
-/// Returns an object implementing [JSONValue](trait.JSONValue.html).
+/// Returns a struct implementing [`JSONValue`](trait.JSONValue.html).
 /// 
 /// The macro takes a comma-separated list of key-value pairs.
 /// Keys can be written literally, or surrounded by brackets (`[key]`)
@@ -235,11 +235,11 @@ macro_rules! inlined_json_object {
 /// ```
 #[macro_export]
 macro_rules! json_object {
-    () => { $crate::json_object::JSONObjectEnd{} };
+    () => { $crate::object::JSONObjectEnd{} };
     // A null value
     ($key:ident : null, $($rest:tt)*) => { json_object!($key : (), $($rest)*) };
-    ($key:ident : true, $($rest:tt)*) => { json_object!($key : $crate::json_base_types::JSONtrue, $($rest)*) };
-    ($key:ident : false, $($rest:tt)*) => { json_object!($key : $crate::json_base_types::JSONfalse, $($rest)*) };
+    ($key:ident : true, $($rest:tt)*) => { json_object!($key : $crate::base_types::JSONtrue, $($rest)*) };
+    ($key:ident : false, $($rest:tt)*) => { json_object!($key : $crate::base_types::JSONfalse, $($rest)*) };
     // Literal key
     ($key:ident : $value:expr, $($rest:tt)*) => {
         inlined_json_object!{
@@ -250,7 +250,7 @@ macro_rules! json_object {
     };
     // The key is an expression in square brackets
     ([$key:expr] : $value:expr, $($rest:tt)*) => {
-        $crate::json_object::JSONObjectEntry {
+        $crate::object::JSONObjectEntry {
             key: $key,
             value: $value,
             next: json_object!($($rest)*)

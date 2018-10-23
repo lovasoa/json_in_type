@@ -97,7 +97,7 @@ Here are detailed comparison results on different json serialization tasks reali
 We use serde's
 [`json!`](https://docs.serde.rs/serde_json/macro.json.html)
 and json_in_type's
-[`json_object!`](https://docs.rs/json_in_type/0.1.2/json_in_type/macro.json_object.html)
+[`json_object!`](https://docs.rs/json_in_type/latest/json_in_type/macro.json_object.html)
 macro to encode a nested json object.
 
 #### Encoded object
@@ -153,7 +153,7 @@ struct MyObject {
 ## External links
 
  * docs.rs hosts this crate's [api documentation](https://docs.rs/json_in_type).
-    * documentation for [the `json_object!` macro](https://docs.rs/json_in_type/0.1.2/json_in_type/macro.json_object.html)
-    * documentation for [the `JSONValue` trait](https://docs.rs/json_in_type/0.1.2/json_in_type/json_value/trait.JSONValue.html)
+    * documentation for [the `json_object!` macro](https://docs.rs/json_in_type/latest/json_in_type/macro.json_object.html)
+    * documentation for [the `JSONValue` trait](https://docs.rs/json_in_type/latest/json_in_type/trait.JSONValue.html)
  * You can automatically derive the `JSONValue` trait for your type using the [json_in_type_derive crate](https://docs.rs/json_in_type_derive)
  * You can see [json_in_type on crates.io](https://crates.io/crates/json_in_type).

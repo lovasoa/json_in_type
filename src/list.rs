@@ -2,7 +2,7 @@
 
 use std::cell::RefCell;
 use std::io;
-use super::json_value::JSONValue;
+use super::JSONValue;
 
 #[inline(always)]
 fn write_json_iterator<J, I, W>(iter: &mut I, w: &mut W) -> io::Result<()>
@@ -97,7 +97,7 @@ impl<T: JSONValue, I: Iterator<Item=T>> JSONValue for RefCell<I> {
 /// # Examples
 /// ### Serialize a slice as JSON
 /// ```
-/// use json_in_type::json_list::ToJSONList;
+/// use json_in_type::list::ToJSONList;
 /// use json_in_type::JSONValue;
 ///
 /// let slice : [u8; 3] = [42,42,42];
@@ -161,7 +161,7 @@ impl JSONValue for JSONListEnd {
 }
 
 /// Creates a static json list that can be serialized very fast.
-/// Returns an object implementing JSONValue.
+/// Returns a struct implementing [`JSONValue`](trait.JSONValue.html).
 ///
 /// # Examples
 /// Create a list containing objects of different types.
@@ -185,17 +185,17 @@ impl JSONValue for JSONListEnd {
 #[macro_export]
 macro_rules! json_list {
     (null $($tt:tt)* ) => { json_list![() $($tt)*] };
-    (true $($tt:tt)* ) => { json_list![$crate::json_base_types::JSONtrue $($tt)*] };
-    (false $($tt:tt)* ) => { json_list![$crate::json_base_types::JSONfalse $($tt)*] };
+    (true $($tt:tt)* ) => { json_list![$crate::base_types::JSONtrue $($tt)*] };
+    (false $($tt:tt)* ) => { json_list![$crate::base_types::JSONfalse $($tt)*] };
 
     ($elem:expr , $($rest:tt)* ) => {
-        $crate::json_list::JSONListElem::new(
+        $crate::list::JSONListElem::new(
             $elem,
             json_list!($($rest)*)
         )
     };
     ($elem:expr) => { json_list![ $elem, ] };
-    () => { $crate::json_list::JSONListEnd{} };
+    () => { $crate::list::JSONListEnd{} };
 }
 
 #[cfg(test)]

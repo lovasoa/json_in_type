@@ -178,25 +178,25 @@
 <span class="doccomment">//! # Examples</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//! extern crate json_in_type;</span>
+<span class="doccomment">//! #[macro_use] extern crate json_in_type_derive;</span>
+<span class="doccomment">//! use json_in_type::JSONValue;</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//!use json_in_type::JSONValue;</span>
+<span class="doccomment">//! #[derive(JSONValue)]</span>
+<span class="doccomment">//! struct MyObject {</span>
+<span class="doccomment">//!     void: (),</span>
+<span class="doccomment">//!     list: Vec&lt;u8&gt;,</span>
+<span class="doccomment">//!     hello: String,</span>
+<span class="doccomment">//! }</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//!#[derive(JSONValue)]</span>
-<span class="doccomment">//!struct MyObject {</span>
-<span class="doccomment">//!    void: (),</span>
-<span class="doccomment">//!    list: Vec&lt;u8&gt;,</span>
-<span class="doccomment">//!    hello: String,</span>
-<span class="doccomment">//!}</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!let obj = MyObject {</span>
-<span class="doccomment">//!    void: (),</span>
-<span class="doccomment">//!    list: vec![1, 2, 3],</span>
-<span class="doccomment">//!    hello: String::from(&quot;world&quot;),</span>
-<span class="doccomment">//!};</span>
-<span class="doccomment">//!assert_eq!(</span>
-<span class="doccomment">//!    r#&quot;{&quot;void&quot;:null,&quot;list&quot;:[1,2,3],&quot;hello&quot;:&quot;world&quot;}&quot;#,</span>
-<span class="doccomment">//!    obj.to_json_string()</span>
-<span class="doccomment">//!);</span>
+<span class="doccomment">//! let obj = MyObject {</span>
+<span class="doccomment">//!     void: (),</span>
+<span class="doccomment">//!     list: vec![1, 2, 3],</span>
+<span class="doccomment">//!     hello: String::from(&quot;world&quot;),</span>
+<span class="doccomment">//! };</span>
+<span class="doccomment">//! assert_eq!(</span>
+<span class="doccomment">//!     r#&quot;{&quot;void&quot;:null,&quot;list&quot;:[1,2,3],&quot;hello&quot;:&quot;world&quot;}&quot;#,</span>
+<span class="doccomment">//!     obj.to_json_string()</span>
+<span class="doccomment">//! );</span>
 <span class="doccomment">//! ```</span>
 <span class="attribute">#![<span class="ident">recursion_limit</span> <span class="op">=</span> <span class="string">&quot;128&quot;</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">proc_macro</span>;

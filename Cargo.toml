@@ -21,7 +21,7 @@ path = "src/bin.rs"
 
 [dependencies]
 ryu-ecmascript = "0.1"
-simd = "0.2.3"
+packed_simd = "0.3.3"
 itoa = {version="0.4", features=["i128"]}
 
 [dev-dependencies]

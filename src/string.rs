@@ -1,8 +1,8 @@
 //! Serialization to JSON strings like `"hello world \n"`
 
-extern crate simd;
+extern crate packed_simd;
 
-use self::simd::u8x16;
+use self::packed_simd::u8x16;
 use std::io;
 use super::JSONValue;
 
@@ -69,7 +69,7 @@ fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
     for chunk_bytes in bytes.chunks(chunk_size) {
         let current_chunk_len = chunk_bytes.len();
         let needs_write = current_chunk_len != chunk_size || {
-            let chunk = u8x16::load(chunk_bytes, 0);
+            let chunk = u8x16::from_slice_unaligned(chunk_bytes);
             !(chunk.ge(space) & chunk.ne(quote) & chunk.ne(slash)).all()
         };
         if needs_write {

@@ -4,7 +4,7 @@ use json_in_type::*;
 
 #[test]
 fn test_simple_json() {
-    let obj = json_object!{
+    let obj = json_object! {
         void: (),
         list: json_list![1,2,3],
         hello: "world"

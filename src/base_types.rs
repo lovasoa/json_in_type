@@ -1,10 +1,10 @@
 //! Serialization of numbers, booleans, and null
 
-extern crate ryu_ecmascript;
 extern crate itoa;
+extern crate ryu_ecmascript;
 
-use std::io;
 use super::JSONValue;
+use std::io;
 
 macro_rules! impl_json_for_int {
     ( $( $json_type:ty ),* ) => {
@@ -19,10 +19,7 @@ macro_rules! impl_json_for_int {
     };
 }
 
-impl_json_for_int!(
-    i8,i16,i32,i64,i128,isize,
-    u8,u16,u32,u64,u128,usize
-);
+impl_json_for_int!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
 
 macro_rules! impl_json_for_float {
     ( $( $json_type:ty ),* ) => {
@@ -79,7 +76,7 @@ impl JSONValue for bool {
     }
 }
 
-impl<T:JSONValue> JSONValue for Option<T> {
+impl<T: JSONValue> JSONValue for Option<T> {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         if let Some(val) = self {
             val.write_json(w)
@@ -97,7 +94,10 @@ mod tests {
     #[test]
     fn test_int() {
         assert_eq!("-1234567890", (-1234567890 as i32).to_json_string());
-        assert_eq!("1234567890123456789", 1234567890123456789u64.to_json_string());
+        assert_eq!(
+            "1234567890123456789",
+            1234567890123456789u64.to_json_string()
+        );
     }
 
     #[test]
@@ -107,7 +107,6 @@ mod tests {
         assert_eq!("null", (f64::NAN).to_json_string());
         assert_eq!("null", (f64::NEG_INFINITY).to_json_string());
     }
-
 
     #[test]
     fn test_bool() {

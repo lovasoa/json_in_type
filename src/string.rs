@@ -1,7 +1,7 @@
 //! Serialization to JSON strings like `"hello world \n"`
 
-use std::io;
 use super::JSONValue;
+use std::io;
 
 struct EscapeChar(u8);
 
@@ -57,7 +57,8 @@ impl<'a> JSONValue for &'a str {
 }
 
 fn write_json_common<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))] {
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    {
         if is_x86_feature_detected!("sse4.2") {
             return unsafe { write_json_simd(s, w) };
         }
@@ -74,27 +75,46 @@ unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
     const VECTOR_SIZE: usize = size_of::<__m128i>();
 
     let bytes = s.as_bytes();
-    let control_chars = _mm_setr_epi8(
-        0, 0x1f, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0);
+    let control_chars = _mm_setr_epi8(0, 0x1f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     let special_chars = _mm_setr_epi8(
-        b'\\' as i8, b'"' as i8, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0);
+        b'\\' as i8,
+        b'"' as i8,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+    );
 
     let mut char_index_to_write = 0;
     let mut current_index = 0;
     for chunk_bytes in bytes.chunks(VECTOR_SIZE) {
         let current_chunk_len = chunk_bytes.len();
-        let needs_write_at = if current_chunk_len != VECTOR_SIZE { 0 } else {
+        let needs_write_at = if current_chunk_len != VECTOR_SIZE {
+            0
+        } else {
             let chunk = _mm_loadu_si128(chunk_bytes.as_ptr() as *const _);
             let idx_control_chars = _mm_cmpestri(
-                control_chars, 2,
-                chunk, current_chunk_len as i32,
+                control_chars,
+                2,
+                chunk,
+                current_chunk_len as i32,
                 _SIDD_CMP_RANGES,
             );
             let idx_special_chars = _mm_cmpestri(
-                special_chars, 2,
-                chunk, current_chunk_len as i32,
+                special_chars,
+                2,
+                chunk,
+                current_chunk_len as i32,
                 _SIDD_CMP_EQUAL_ANY,
             );
             idx_special_chars.min(idx_control_chars) as usize
@@ -123,7 +143,6 @@ fn write_json_nosimd<W: io::Write>(bytes: &[u8], w: &mut W) -> io::Result<()> {
 }
 
 impl<'a> JSONString for &'a str {}
-
 
 impl JSONValue for String {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
@@ -156,8 +175,14 @@ mod tests {
 
     #[test]
     fn test_string_with_control_chars() {
-        assert_eq!(r#""0123456789\u001fabcde""#, "0123456789\x1Fabcde".to_json_string());
-        assert_eq!(r#""0123456789\u001eabcde""#, "0123456789\x1Eabcde".to_json_string());
+        assert_eq!(
+            r#""0123456789\u001fabcde""#,
+            "0123456789\x1Fabcde".to_json_string()
+        );
+        assert_eq!(
+            r#""0123456789\u001eabcde""#,
+            "0123456789\x1Eabcde".to_json_string()
+        );
     }
 
     #[test]
@@ -175,7 +200,10 @@ mod tests {
             assert_eq!(format!("\"{}\"", xs), xs.to_json_string());
 
             let newlines = String::from("\n").repeat(i);
-            assert_eq!(format!("\"{}\"", newlines.replace('\n', "\\n")), newlines.to_json_string());
+            assert_eq!(
+                format!("\"{}\"", newlines.replace('\n', "\\n")),
+                newlines.to_json_string()
+            );
         }
     }
 

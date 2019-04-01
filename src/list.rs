@@ -1,14 +1,16 @@
 //! Serialization to JSON lists like `[0,true,"x"]`
 
+use super::JSONValue;
 use std::cell::RefCell;
 use std::io;
-use super::JSONValue;
 
 #[inline(always)]
 fn write_json_iterator<J, I, W>(iter: &mut I, w: &mut W) -> io::Result<()>
-    where I: Iterator<Item=J>,
-          J: JSONValue,
-          W: io::Write {
+where
+    I: Iterator<Item = J>,
+    J: JSONValue,
+    W: io::Write,
+{
     w.write_all(b"[")?;
     if let Some(first) = iter.next() {
         first.write_json(w)?;
@@ -83,7 +85,7 @@ impl<T: JSONValue> JSONValue for Vec<T> {
 /// # let expected_bytes = r#"[{"line":1,"contents":"a line of text"},{"line":2,"contents":"another line of text"}]"#;
 /// # assert_eq!(expected_bytes, ::std::str::from_utf8(&output_file).unwrap());
 /// ```
-impl<T: JSONValue, I: Iterator<Item=T>> JSONValue for RefCell<I> {
+impl<T: JSONValue, I: Iterator<Item = T>> JSONValue for RefCell<I> {
     #[inline]
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         write_json_iterator(&mut *self.borrow_mut(), w)
@@ -105,10 +107,13 @@ impl<T: JSONValue, I: Iterator<Item=T>> JSONValue for RefCell<I> {
 /// assert_eq!("[42,42,42]", ToJSONList(slice).to_json_string());
 /// ```
 pub struct ToJSONList<T: JSONValue, U>(pub U)
-    where for<'a> &'a U: IntoIterator<Item=&'a T>;
+where
+    for<'a> &'a U: IntoIterator<Item = &'a T>;
 
 impl<T: JSONValue, U> JSONValue for ToJSONList<T, U>
-    where for<'a> &'a U: IntoIterator<Item=&'a T> {
+where
+    for<'a> &'a U: IntoIterator<Item = &'a T>,
+{
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         write_json_iterator(&mut (&self.0).into_iter(), w)
     }
@@ -222,8 +227,8 @@ mod tests {
 
     #[test]
     fn multiple_elements() {
-        assert_eq!("[1,2]", json_list![1,2].to_json_string());
-        assert_eq!("[1,2]", json_list![1,2,].to_json_string());
-        assert_eq!("[1,2,3,4,5]", json_list![1,2,3,4,5].to_json_string());
+        assert_eq!("[1,2]", json_list![1, 2].to_json_string());
+        assert_eq!("[1,2]", json_list![1, 2,].to_json_string());
+        assert_eq!("[1,2,3,4,5]", json_list![1, 2, 3, 4, 5].to_json_string());
     }
 }

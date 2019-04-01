@@ -9,8 +9,7 @@ extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
 
-use criterion::{Criterion, Fun, ParameterizedBenchmark, Throughput,
-                PlotConfiguration, AxisScale};
+use criterion::{AxisScale, Criterion, Fun, ParameterizedBenchmark, PlotConfiguration, Throughput};
 use json_in_type::*;
 
 fn simple_json_in_type(n: f64) -> Vec<u8> {
@@ -115,7 +114,9 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_functions(
         "encode simple object with derive",
         vec![
-            Fun::new("json_in_type", |b, i| b.iter(|| simple_json_in_type_derive(*i))),
+            Fun::new("json_in_type", |b, i| {
+                b.iter(|| simple_json_in_type_derive(*i))
+            }),
             Fun::new("serde_json", |b, i| b.iter(|| simple_serde_derive(*i))),
         ],
         999_999_999.999f64,
@@ -132,8 +133,11 @@ fn criterion_benchmark(c: &mut Criterion) {
     struct BenchStr(String);
     impl BenchStr {
         fn new(magnitude: usize) -> BenchStr {
-            BenchStr("Lorem ipsum dolor sit amet, consectetur adipiscing elit. \
-                     In vel erat rutrum, tincidunt lorem nullam\n".repeat(1 << magnitude))
+            BenchStr(
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. \
+                 In vel erat rutrum, tincidunt lorem nullam\n"
+                    .repeat(1 << magnitude),
+            )
         }
         fn serde(&self) -> Vec<u8> {
             serde_json::to_vec(&self.0).unwrap()
@@ -141,7 +145,9 @@ fn criterion_benchmark(c: &mut Criterion) {
         fn json_in_type(&self) -> Vec<u8> {
             self.0.to_json_buffer()
         }
-        fn bytes_len(&self) -> usize { self.0.as_bytes().len() }
+        fn bytes_len(&self) -> usize {
+            self.0.as_bytes().len()
+        }
     }
     impl std::fmt::Debug for BenchStr {
         fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -155,11 +161,10 @@ fn criterion_benchmark(c: &mut Criterion) {
             "json_in_type",
             |b, i| b.iter(|| i.json_in_type()),
             (0..12).step_by(4).map(BenchStr::new),
-        ).with_function(
-            "serde",
-            |b, i| b.iter(|| i.serde()),
-        ).throughput(|i| Throughput::Bytes(i.bytes_len() as u32)
-        ).plot_config(PlotConfiguration::default().summary_scale(AxisScale::Logarithmic)),
+        )
+        .with_function("serde", |b, i| b.iter(|| i.serde()))
+        .throughput(|i| Throughput::Bytes(i.bytes_len() as u32))
+        .plot_config(PlotConfiguration::default().summary_scale(AxisScale::Logarithmic)),
     );
 }
 

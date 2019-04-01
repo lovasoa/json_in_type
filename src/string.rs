@@ -1,8 +1,5 @@
 //! Serialization to JSON strings like `"hello world \n"`
 
-extern crate packed_simd;
-
-use self::packed_simd::u8x16;
 use std::io;
 use super::JSONValue;
 
@@ -30,6 +27,7 @@ fn json_escaped_char(c: u8) -> Option<EscapeChar> {
         Some(EscapeChar(c))
     }
 }
+
 /// Implemented by types that can be serialized to a json string.
 ///
 /// Implement this trait for your type if you want to be able to use it as a
@@ -53,28 +51,58 @@ impl JSONString for char {}
 impl<'a> JSONValue for &'a str {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         w.write_all(b"\"")?;
-        write_json_simd(self, w)?;
+        write_json_common(self, w)?;
         w.write_all(b"\"")
     }
 }
 
-fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
+fn write_json_common<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))] {
+        if is_x86_feature_detected!("sse4.2") {
+            return unsafe { write_json_simd(s, w) };
+        }
+    }
+    write_json_nosimd(s.as_bytes(), w)
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "sse4.2")]
+unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
+    use std::arch::x86_64::*;
+    use std::mem::size_of;
+
+    const VECTOR_SIZE: usize = size_of::<__m128i>();
+
     let bytes = s.as_bytes();
-    let space = u8x16::splat(b' ');
-    let quote = u8x16::splat(b'"');
-    let slash = u8x16::splat(b'\\');
-    let chunk_size = 16;
+    let control_chars = _mm_setr_epi8(
+        0, 0x1f, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0);
+    let special_chars = _mm_setr_epi8(
+        b'\\' as i8, b'"' as i8, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0);
+
     let mut char_index_to_write = 0;
     let mut current_index = 0;
-    for chunk_bytes in bytes.chunks(chunk_size) {
+    for chunk_bytes in bytes.chunks(VECTOR_SIZE) {
         let current_chunk_len = chunk_bytes.len();
-        let needs_write = current_chunk_len != chunk_size || {
-            let chunk = u8x16::from_slice_unaligned(chunk_bytes);
-            !(chunk.ge(space) & chunk.ne(quote) & chunk.ne(slash)).all()
+        let needs_write_at = if current_chunk_len != VECTOR_SIZE { 0 } else {
+            let chunk = _mm_loadu_si128(chunk_bytes.as_ptr() as *const _);
+            let idx_control_chars = _mm_cmpestri(
+                control_chars, 2,
+                chunk, current_chunk_len as i32,
+                _SIDD_CMP_RANGES,
+            );
+            let idx_special_chars = _mm_cmpestri(
+                special_chars, 2,
+                chunk, current_chunk_len as i32,
+                _SIDD_CMP_EQUAL_ANY,
+            );
+            idx_special_chars.min(idx_control_chars) as usize
         };
-        if needs_write {
-            w.write_all(&bytes[char_index_to_write..current_index])?;
-            write_json_nosimd(chunk_bytes, w)?;
+        if needs_write_at != VECTOR_SIZE {
+            let end_idx = current_index + needs_write_at;
+            w.write_all(&bytes[char_index_to_write..end_idx])?;
+            write_json_nosimd(&chunk_bytes[needs_write_at..], w)?;
             char_index_to_write = current_index + current_chunk_len;
         }
         current_index += current_chunk_len;
@@ -124,6 +152,12 @@ mod tests {
         assert_eq!(r#""""#, "".to_json_string());
         assert_eq!(r#""Hello, world!""#, "Hello, world!".to_json_string());
         assert_eq!(r#""\t\t\n""#, "\t\t\n".to_json_string());
+    }
+
+    #[test]
+    fn test_string_with_control_chars() {
+        assert_eq!(r#""0123456789\u001fabcde""#, "0123456789\x1Fabcde".to_json_string());
+        assert_eq!(r#""0123456789\u001eabcde""#, "0123456789\x1Eabcde".to_json_string());
     }
 
     #[test]

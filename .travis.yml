@@ -20,7 +20,7 @@ jobs:
   include:
     - stage: deploy
       rust: stable
-      script: cargo bench
+      script: cargo bench && mkdir -p docs && mv target/criterion docs
       before_install:
         - sudo apt-get install -y gnuplot
       deploy:

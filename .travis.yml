@@ -11,11 +11,6 @@ stages:
 
 cache: cargo
 
-before_install:
-  - sudo apt-get install -y gnuplot
-
-after_success: cargo bench
-
 env:
   - RUSTFLAGS="-C target-cpu=native"
 
@@ -25,7 +20,9 @@ jobs:
   include:
     - stage: deploy
       rust: stable
-      script: skip
+      script: cargo bench && mkdir -p docs && mv target/criterion docs
+      before_install:
+        - sudo apt-get install -y gnuplot
       deploy:
         - provider: pages
           skip-cleanup: true

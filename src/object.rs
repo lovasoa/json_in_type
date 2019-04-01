@@ -1,17 +1,19 @@
 //! Serialization to JSON objects like `{"x":1,"y":null}`
 
+use super::string::JSONString;
+use super::JSONValue;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
 use std::hash::Hash;
 use std::io;
-use super::string::JSONString;
-use super::JSONValue;
 
 /// Write a single key-value pair
 fn write_object_entry<W, K, V>(w: &mut W, key: &K, value: &V) -> io::Result<()>
-    where W: io::Write,
-          K: JSONString,
-          V: JSONValue {
+where
+    W: io::Write,
+    K: JSONString,
+    V: JSONValue,
+{
     key.write_json(w)?;
     w.write_all(b":")?;
     value.write_json(w)
@@ -19,12 +21,14 @@ fn write_object_entry<W, K, V>(w: &mut W, key: &K, value: &V) -> io::Result<()>
 
 /// Write a list of key-value pairs to a writer as a json object
 fn write_object<'a, W, K, V, I>(w: &mut W, iter: &mut I) -> io::Result<()>
-    where W: io::Write,
-          K: JSONString,
-          V: JSONValue,
-          V: 'a,
-          K: 'a,
-          I: Iterator<Item=(&'a K, &'a V)> {
+where
+    W: io::Write,
+    K: JSONString,
+    V: JSONValue,
+    V: 'a,
+    K: 'a,
+    I: Iterator<Item = (&'a K, &'a V)>,
+{
     w.write_all(b"{")?;
     if let Some((key, value)) = iter.next() {
         write_object_entry(w, key, value)?;
@@ -52,23 +56,22 @@ fn write_object<'a, W, K, V, I>(w: &mut W, iter: &mut I) -> io::Result<()>
 /// assert_eq!("{\"x\":1,\"y\":2}", my_obj.to_json_string());
 /// ```
 pub struct ToJSONObject<K, V, I>(pub I)
-    where K: JSONString,
-          V: JSONValue,
-          for<'a> &'a I: IntoIterator<Item=&'a (K, V)>;
+where
+    K: JSONString,
+    V: JSONValue,
+    for<'a> &'a I: IntoIterator<Item = &'a (K, V)>;
 
 impl<K, V, I> JSONValue for ToJSONObject<K, V, I>
-    where K: JSONString,
-          V: JSONValue,
-          for<'a> &'a I: IntoIterator<Item=&'a (K, V)>
+where
+    K: JSONString,
+    V: JSONValue,
+    for<'a> &'a I: IntoIterator<Item = &'a (K, V)>,
 {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-        let mut iter = (&self.0)
-            .into_iter()
-            .map(|(k, v)| (k, v)); // Convert a borrowed tuple to a tuple of borrowed values
+        let mut iter = (&self.0).into_iter().map(|(k, v)| (k, v)); // Convert a borrowed tuple to a tuple of borrowed values
         write_object(w, &mut iter)
     }
 }
-
 
 /// Serialize a HashMap to a JSON object. The property order is not guaranteed.
 impl<K: JSONString + Eq + Hash, V: JSONValue, S: BuildHasher> JSONValue for HashMap<K, V, S> {
@@ -84,7 +87,6 @@ pub trait JSONObject: JSONValue {
         self.write_json_ending(w, true)
     }
 }
-
 
 /// A JSON object stored as a static linked list.
 /// This is a generic structure that specializes at compile-time
@@ -139,41 +141,46 @@ macro_rules! inlined_json_object {
         use $crate::JSONValue;
 
         struct InlinedJSONObjectEntry<V: JSONValue, U: JSONObject> {
-            value:V,
-            next: U
+            value: V,
+            next: U,
         }
 
-        impl<V: JSONValue, U: JSONObject> JSONObject
-            for InlinedJSONObjectEntry<V,U> {
+        impl<V: JSONValue, U: JSONObject> JSONObject for InlinedJSONObjectEntry<V, U> {
             #[inline(always)]
-            fn write_json_ending<W: ::std::io::Write>(&self, w: &mut W, first: bool)
-                -> ::std::io::Result<()> {
+            fn write_json_ending<W: ::std::io::Write>(
+                &self,
+                w: &mut W,
+                first: bool,
+            ) -> ::std::io::Result<()> {
                 w.write_all(
                     if first {
-                        concat!("{\"", stringify!($key),"\":")
+                        concat!("{\"", stringify!($key), "\":")
                     } else {
-                        concat!(",\"", stringify!($key),"\":")
-                    }.as_bytes()
+                        concat!(",\"", stringify!($key), "\":")
+                    }
+                    .as_bytes(),
                 )?;
                 self.value.write_json(w)?;
                 self.next.write_json_ending(w, false)
             }
         }
 
-        impl<V: JSONValue, U: JSONObject> JSONValue
-            for InlinedJSONObjectEntry<V,U> {
+        impl<V: JSONValue, U: JSONObject> JSONValue for InlinedJSONObjectEntry<V, U> {
             fn write_json<W: ::std::io::Write>(&self, w: &mut W) -> ::std::io::Result<()> {
                 self.write_json_full(w)
             }
         }
 
-        InlinedJSONObjectEntry{value:$value, next:$next}
+        InlinedJSONObjectEntry {
+            value: $value,
+            next: $next,
+        }
     }};
 }
 
 /// Creates a static json object that can be serialized very fast.
 /// Returns a struct implementing [`JSONValue`](trait.JSONValue.html).
-/// 
+///
 /// The macro takes a comma-separated list of key-value pairs.
 /// Keys can be written literally, or surrounded by brackets (`[key]`)
 /// to reference external variables. A value can be omitted, in which
@@ -278,37 +285,55 @@ mod tests {
 
     #[test]
     fn test_single_pair() {
-        assert_eq!(r#"{"x":{}}"#, json_object!(x : json_object!()).to_json_string());
+        assert_eq!(
+            r#"{"x":{}}"#,
+            json_object!(x: json_object!()).to_json_string()
+        );
         // With a trailing comma:
-        assert_eq!(r#"{"x":{}}"#, json_object!(x : json_object!(),).to_json_string());
+        assert_eq!(
+            r#"{"x":{}}"#,
+            json_object!(x: json_object!(),).to_json_string()
+        );
     }
 
     #[test]
     fn test_two_pairs() {
-        assert_eq!(r#"{"x":{},"y":{}}"#, json_object! {
-            x : json_object!(),
-            y : json_object!()
-        }.to_json_string());
+        assert_eq!(
+            r#"{"x":{},"y":{}}"#,
+            json_object! {
+                x : json_object!(),
+                y : json_object!()
+            }
+            .to_json_string()
+        );
     }
 
     #[test]
     fn test_nested() {
-        assert_eq!(r#"{"x":{"y":{}}}"#, json_object! {
-            x : json_object! {
-                y : json_object!()
+        assert_eq!(
+            r#"{"x":{"y":{}}}"#,
+            json_object! {
+                x : json_object! {
+                    y : json_object!()
+                }
             }
-        }.to_json_string());
+            .to_json_string()
+        );
     }
 
     #[test]
     fn test_dynamic_keys() {
         let x = "x";
         let y = String::from("y");
-        assert_eq!(r#"{"x":{"y":{}}}"#, json_object! {
-            [x] : json_object! {
-                [y] : json_object!()
+        assert_eq!(
+            r#"{"x":{"y":{}}}"#,
+            json_object! {
+                [x] : json_object! {
+                    [y] : json_object!()
+                }
             }
-        }.to_json_string());
+            .to_json_string()
+        );
     }
 
     #[test]
@@ -317,10 +342,7 @@ mod tests {
         map.insert("x", 1);
         map.insert("y", 2);
         // The order in which the keys are serialized is not guaranteed
-        let expected = vec![
-            r#"{"x":1,"y":2}"#,
-            r#"{"y":2,"x":1}"#
-        ];
+        let expected = vec![r#"{"x":1,"y":2}"#, r#"{"y":2,"x":1}"#];
         assert!(expected.contains(&&map.to_json_string()[..]));
     }
 

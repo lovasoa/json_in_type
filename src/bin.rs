@@ -1,5 +1,3 @@
-extern crate json_in_type;
-
 use json_in_type::*;
 
 fn main() {
@@ -7,7 +5,7 @@ fn main() {
     let heterogeneous_list = json_list![42u8, true];
     let dynamic_key = "hello";
 
-    let json_val = json_object!{
+    let json_val = json_object! {
         is_awesome, heterogeneous_list,
         [dynamic_key]: "world"
     };

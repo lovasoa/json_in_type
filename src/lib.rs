@@ -23,7 +23,6 @@ pub mod object;
 pub mod string;
 pub mod utils;
 
-
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -67,7 +66,6 @@ pub trait JSONValue {
     }
 }
 
-
 impl<'a, S: JSONValue + ?Sized> JSONValue for &'a S {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         (**self).write_json(w)
@@ -100,7 +98,8 @@ pub struct JSON<T: JSONValue>(pub T);
 impl<T: JSONValue> Display for JSON<T> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let mut writer = utils::FormatterWriter(f);
-        self.0.write_json(&mut writer)
+        self.0
+            .write_json(&mut writer)
             .map(|_size| ())
             .map_err(|_err| fmt::Error {})
     }

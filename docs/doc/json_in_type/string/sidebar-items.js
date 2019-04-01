@@ -1,1 +1,0 @@
-initSidebarItems({"trait":[["JSONString","Implemented by types that can be serialized to a json string."]]});

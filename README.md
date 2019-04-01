@@ -24,8 +24,6 @@ fn write_obj_good(value: f32) -> String {
 ## Example use
 
 ```rust
-extern crate json_in_type;
-
 use json_in_type::*;
 
 fn main() {
@@ -104,7 +102,7 @@ macro to encode a nested json object.
 We encode a JSON structure composed of 8 nested objects, each of 
 which contains a single key, that is known at compile time.
 The last nested object contains an integer *n* that is not known at compile time.
-```json
+```js
 {"nested":{"nested":{"nested":{"nested":{"nested":{"nested":{"nested":{"nested":{"value":n}}}}}}}}}
 ```
 

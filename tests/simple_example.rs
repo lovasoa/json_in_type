@@ -1,5 +1,3 @@
-extern crate json_in_type;
-
 use json_in_type::*;
 
 #[test]

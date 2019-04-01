@@ -1,8 +1,5 @@
 //! Serialization of numbers, booleans, and null
 
-extern crate itoa;
-extern crate ryu_ecmascript;
-
 use super::JSONValue;
 use std::io;
 

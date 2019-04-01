@@ -1,13 +1,7 @@
 #[macro_use]
-extern crate criterion;
-extern crate json_in_type;
-#[macro_use]
 extern crate json_in_type_derive;
-extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
-extern crate serde_json;
 
 use criterion::{AxisScale, Criterion, Fun, ParameterizedBenchmark, PlotConfiguration, Throughput};
 use json_in_type::*;
@@ -22,7 +16,7 @@ fn simple_json_in_type(n: f64) -> Vec<u8> {
 }
 
 fn simple_serde(n: f64) -> Vec<u8> {
-    let obj = json!({
+    let obj = serde_json::json!({
         "void": null,
         "list": [1., 2., 3., n],
         "hello": "world"
@@ -80,7 +74,7 @@ fn nested_json_in_type(n: u8) -> Vec<u8> {
 }
 
 fn nested_serde(n: u8) -> Vec<u8> {
-    let obj = json!({
+    let obj = serde_json::json!({
         "nested": {
             "nested": {
                 "nested": {
@@ -162,15 +156,15 @@ fn criterion_benchmark(c: &mut Criterion) {
             |b, i| b.iter(|| i.json_in_type()),
             (0..12).step_by(4).map(BenchStr::new),
         )
-        .with_function("serde", |b, i| b.iter(|| i.serde()))
-        .throughput(|i| Throughput::Bytes(i.bytes_len() as u32))
-        .plot_config(PlotConfiguration::default().summary_scale(AxisScale::Logarithmic)),
+            .with_function("serde", |b, i| b.iter(|| i.serde()))
+            .throughput(|i| Throughput::Bytes(i.bytes_len() as u32))
+            .plot_config(PlotConfiguration::default().summary_scale(AxisScale::Logarithmic)),
     );
 }
 
-criterion_group! {
+criterion::criterion_group! {
     name = benches;
     config = Criterion::default().noise_threshold(0.05);
     targets = criterion_benchmark
 }
-criterion_main!(benches);
+criterion::criterion_main!(benches);

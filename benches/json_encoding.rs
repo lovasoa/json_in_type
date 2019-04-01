@@ -9,7 +9,8 @@ extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
 
-use criterion::{Criterion, Fun};
+use criterion::{Criterion, Fun, ParameterizedBenchmark, Throughput,
+                PlotConfiguration, AxisScale};
 use json_in_type::*;
 
 fn simple_json_in_type(n: f64) -> Vec<u8> {
@@ -127,20 +128,42 @@ fn criterion_benchmark(c: &mut Criterion) {
         ],
         0,
     );
-    c.bench_functions(
-        "encode 1Mb string",
-        vec![
-            Fun::new("json_in_type",
-                     |b, i: &String| b.iter(|| i.to_json_buffer())),
-            Fun::new("serde_json",
-                     |b, i: &String| b.iter(|| serde_json::to_vec(i).unwrap())),
-        ],
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In vel erat rutrum, tincidunt lorem nullam.\n"
-            .to_string().repeat(10_000),
+
+    struct BenchStr(String);
+    impl BenchStr {
+        fn new(magnitude: usize) -> BenchStr {
+            BenchStr("Lorem ipsum dolor sit amet, consectetur adipiscing elit. \
+                     In vel erat rutrum, tincidunt lorem nullam\n".repeat(1 << magnitude))
+        }
+        fn serde(&self) -> Vec<u8> {
+            serde_json::to_vec(&self.0).unwrap()
+        }
+        fn json_in_type(&self) -> Vec<u8> {
+            self.0.to_json_buffer()
+        }
+        fn bytes_len(&self) -> usize { self.0.as_bytes().len() }
+    }
+    impl std::fmt::Debug for BenchStr {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            write!(f, "{}-bytes string", self.bytes_len())
+        }
+    }
+
+    c.bench(
+        "string encoding throughput",
+        ParameterizedBenchmark::new(
+            "json_in_type",
+            |b, i| b.iter(|| i.json_in_type()),
+            (0..12).step_by(4).map(BenchStr::new),
+        ).with_function(
+            "serde",
+            |b, i| b.iter(|| i.serde()),
+        ).throughput(|i| Throughput::Bytes(i.bytes_len() as u32)
+        ).plot_config(PlotConfiguration::default().summary_scale(AxisScale::Logarithmic)),
     );
 }
 
-criterion_group!{
+criterion_group! {
     name = benches;
     config = Criterion::default().noise_threshold(0.05);
     targets = criterion_benchmark

@@ -9,12 +9,30 @@ stages:
   - test
   - deploy
 
+cache: cargo
+
+before_install:
+  - sudo apt-get install -y gnuplot
+
+after_success: cargo bench
+
+env:
+  - RUSTFLAGS="-C target-cpu=native"
+
 jobs:
+  allow_failures:
+    - rust: nightly
   include:
     - stage: deploy
       rust: stable
       script: skip
       deploy:
+        - provider: pages
+          skip-cleanup: true
+          github-token: $GITHUB_TOKEN
+          keep-history: true
+          on:
+            branch: master
         - provider: cargo
           token:
             secure: "WTq6WyDlGqp2zcrqmAYucAq8vUT5vx/Xr/leuqOTj4v42Yus7CQ+M2YzZTNOoDZhtZrTi3r4WZJu36MaEEBEjDflo/NlYDJmqHjS2klAMOxwBC2bIVLGG9g2XW+6S00XgicaNGFHVFAjBqUHqgYWMK8C2d2BCpdTQO9pnC8yPXUZmlte5SJGh6WrSHJJUYWZOsBXxZMXEjaR3ipNTVXHki2rK67ZFvnJbwCN4Vk/dGPvyxnQUWLkm2SktXzdMMdu0Qzxa6dftDmhk6QkyztqoK5P19BmaDQYh4JUV3YPWV6T4lR1kBXntiFKeD9MR4iVdM/qNawT5DsD+nStsZa48DpoPq7S/ynGRaqFo3zCW/9iBB46ALndFTDE3GvAkKUyclYQC02Fv1VMM5+3prrbIVtG1ZpbtKmExWHY7bJHKCMP6scPtRV6PZ4H3iX1qhfXGQFcXY1kqgQ7bl0zWGjmnT95y9AUPVhY/YSNZf0ixv5BLliWpvzBt4cICCxzIEA2fWc0K7hui5sFKeK8eGli89A5IJTozdlDFlOqJifwnR1FBAZruA/QcnMY9McdotJsv8x6S6+0JtnokkNbQHdWdE45zJPlmvk+SpW2sknO0SKbhmbvKp36qbzGesjIbCM352+4OF3dudbGQsWvYJC8lK74u6SHbRMxwIc+16Sdydc="

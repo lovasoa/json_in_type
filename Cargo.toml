@@ -10,6 +10,7 @@ readme = "README.md"
 categories = ["encoding"]
 keywords = ["json", "serialization"]
 documentation = "https://docs.rs/json_in_type"
+edition="2018"
 
 [lib]
 name = "json_in_type"

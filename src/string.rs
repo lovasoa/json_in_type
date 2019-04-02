@@ -1,7 +1,8 @@
 //! Serialization to JSON strings like `"hello world \n"`
 
-use super::JSONValue;
 use std::io;
+
+use super::JSONValue;
 
 struct EscapeChar(u8);
 
@@ -68,6 +69,7 @@ fn write_json_common<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[target_feature(enable = "sse4.2")]
+#[allow(clippy::cast_ptr_alignment)]
 unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
     use std::arch::x86_64::*;
     use std::mem::size_of;

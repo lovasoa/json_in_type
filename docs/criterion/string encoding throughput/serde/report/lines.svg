@@ -102,15 +102,15 @@
 	<g transform="translate(1230.1,67.6)" style="stroke:none; fill:black; font-family:Helvetica; font-size:12.00pt; text-anchor:start">
 		<text>serde</text>
 	</g>
-	<path stroke='rgb(178,  34,  34)'  d='M1179.6,63.1 L1221.8,63.1 M71.9,608.7 L506.5,397.7 L941.1,171.5  h0.01'/></g>
+	<path stroke='rgb(178,  34,  34)'  d='M1179.6,63.1 L1221.8,63.1 M71.9,612.7 L506.5,409.6 L941.1,191.0  h0.01'/></g>
 	</g>
 	<g id="gnuplot_plot_2" ><title>gnuplot_plot_2</title>
 <g style="fill:none; color:white; stroke:rgb(178,  34,  34); stroke-width:1.00; stroke-linecap:butt; stroke-linejoin:miter">
 </g>
 <g style="fill:none; color:red; stroke:currentColor; stroke-width:1.00; stroke-linecap:butt; stroke-linejoin:miter">
-	<use xlink:href='#gpPt6' transform='translate(71.9,608.7) scale(3.38)' color='rgb(178,  34,  34)'/>
-	<use xlink:href='#gpPt6' transform='translate(506.5,397.7) scale(3.38)' color='rgb(178,  34,  34)'/>
-	<use xlink:href='#gpPt6' transform='translate(941.1,171.5) scale(3.38)' color='rgb(178,  34,  34)'/>
+	<use xlink:href='#gpPt6' transform='translate(71.9,612.7) scale(3.38)' color='rgb(178,  34,  34)'/>
+	<use xlink:href='#gpPt6' transform='translate(506.5,409.6) scale(3.38)' color='rgb(178,  34,  34)'/>
+	<use xlink:href='#gpPt6' transform='translate(941.1,191.0) scale(3.38)' color='rgb(178,  34,  34)'/>
 </g>
 	</g>
 <g style="fill:none; color:black; stroke:currentColor; stroke-width:1.00; stroke-linecap:butt; stroke-linejoin:miter">

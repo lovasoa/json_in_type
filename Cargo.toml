@@ -1,7 +1,7 @@
 [package]
 name = "json_in_type"
 description = "a library for fast json serialization"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["ophir <pere.jobs@gmail.com>"]
 license = "BSD-2-Clause"
 homepage = "https://lovasoa.github.io/json_in_type/"

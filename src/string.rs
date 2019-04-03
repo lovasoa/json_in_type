@@ -9,14 +9,40 @@ static ESCAPE_CHARS: [&'static [u8]; 0x20] = [
     b"\\u0019", b"\\u001a", b"\\u001b", b"\\u001c", b"\\u001d", b"\\u001e", b"\\u001f",
 ];
 
+const F: bool = false;
+const T: bool = true;
+static DOESNT_NEED_ESCAPING: [bool; 256] = [
+    // 1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+    F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, // 0
+    F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, // 1
+    T, T, F, T, T, T, T, T, T, T, T, T, T, T, T, T, // 2
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // 3
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // 4
+    T, T, T, T, T, T, T, T, T, T, T, T, F, T, T, T, // 5
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // 6
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, F, // 7
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // 8
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // 9
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // A
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // B
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // C
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // D
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // E
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // F
+];
+
 #[inline(always)]
 fn json_escaped_char(c: u8) -> Option<&'static [u8]> {
-    match c {
-        x if x < 0x20 => Some(ESCAPE_CHARS[c as usize]),
-        b'\\' => Some(&b"\\\\"[..]),
-        b'\"' => Some(&b"\\\""[..]),
-        0x7F => Some(&b"\\u007f"[..]),
-        _ => None,
+    if DOESNT_NEED_ESCAPING[c as usize] {
+        None
+    } else {
+        Some(match c {
+            x if x < 0x20 => ESCAPE_CHARS[c as usize],
+            b'\\' => &b"\\\\"[..],
+            b'\"' => &b"\\\""[..],
+            0x7F => &b"\\u007f"[..],
+            _ => unreachable!(),
+        })
     }
 }
 

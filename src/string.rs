@@ -15,6 +15,7 @@ fn json_escaped_char(c: u8) -> Option<&'static [u8]> {
         x if x < 0x20 => Some(ESCAPE_CHARS[c as usize]),
         b'\\' => Some(&b"\\\\"[..]),
         b'\"' => Some(&b"\\\""[..]),
+        0x7F => Some(&b"\\u007f"[..]),
         _ => None,
     }
 }
@@ -49,11 +50,11 @@ impl<'a> JSONValue for &'a str {
 
 fn write_json_common<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-    {
-        if is_x86_feature_detected!("sse4.2") {
-            return unsafe { write_json_simd(s, w) };
+        {
+            if is_x86_feature_detected!("sse4.2") {
+                return unsafe { write_json_simd(s, w) };
+            }
         }
-    }
     write_json_nosimd(s.as_bytes(), w)
 }
 
@@ -70,7 +71,8 @@ unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
     let control_chars = _mm_setr_epi8(0, 0x1f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     let slash = b'\\' as i8;
     let quote = b'"' as i8;
-    let special_chars = _mm_setr_epi8(slash, quote, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    let del = 0x7F as i8;
+    let special_chars = _mm_setr_epi8(slash, quote, del, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
     let mut char_index_to_write = 0;
     let mut current_index = 0;
@@ -89,7 +91,7 @@ unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
             );
             let idx_special_chars = _mm_cmpestri(
                 special_chars,
-                2,
+                3,
                 chunk,
                 current_chunk_len as i32,
                 _SIDD_CMP_EQUAL_ANY,
@@ -159,6 +161,10 @@ mod tests {
         assert_eq!(
             r#""0123456789\u001eabcde""#,
             "0123456789\x1Eabcde".to_json_string()
+        );
+        assert_eq!(
+            r#""0123456789\u007fabcde""#,
+            "0123456789\x7Fabcde".to_json_string()
         );
     }
 

@@ -9,31 +9,19 @@ static ESCAPE_CHARS: [&'static [u8]; 0x20] = [
     b"\\u0019", b"\\u001a", b"\\u001b", b"\\u001c", b"\\u001d", b"\\u001e", b"\\u001f",
 ];
 
-const F: bool = false;
-const T: bool = true;
-static DOESNT_NEED_ESCAPING: [bool; 256] = [
-    // 1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-    F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, // 0
-    F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, // 1
-    T, T, F, T, T, T, T, T, T, T, T, T, T, T, T, T, // 2
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // 3
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // 4
-    T, T, T, T, T, T, T, T, T, T, T, T, F, T, T, T, // 5
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // 6
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, F, // 7
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // 8
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // 9
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // A
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // B
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // C
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // D
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // E
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, // F
+// This bitset represents which bytes can be copied as-is to a JSON string (0)
+// And which one need to be escaped (1)
+static NEEDS_ESCAPING_BITSET: [u64; 4] = [
+    0b0000000000000000_0000000000000100_1111111111111111_1111111111111111,
+    0b1000000000000000_0000000000000000_0001000000000000_0000000000000000,
+    0b0000000000000000_0000000000000000_0000000000000000_0000000000000000,
+    0b0000000000000000_0000000000000000_0000000000000000_0000000000000000,
 ];
 
 #[inline(always)]
 fn json_escaped_char(c: u8) -> Option<&'static [u8]> {
-    if DOESNT_NEED_ESCAPING[c as usize] {
+    let bitset_value = NEEDS_ESCAPING_BITSET[(c / 64) as usize] & (1 << (c % 64));
+    if bitset_value == 0 {
         None
     } else {
         Some(match c {

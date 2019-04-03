@@ -3,7 +3,10 @@ extern crate json_in_type_derive;
 #[macro_use]
 extern crate serde_derive;
 
-use criterion::{AxisScale, Criterion, Fun, ParameterizedBenchmark, PlotConfiguration, Throughput};
+use criterion::{
+    AxisScale, Criterion, Fun,
+    ParameterizedBenchmark, PlotConfiguration, Throughput,
+};
 use json_in_type::*;
 
 fn simple_json_in_type(n: f64) -> Vec<u8> {
@@ -159,6 +162,15 @@ fn criterion_benchmark(c: &mut Criterion) {
             .with_function("serde", |b, i| b.iter(|| i.serde()))
             .throughput(|i| Throughput::Bytes(i.bytes_len() as u32))
             .plot_config(PlotConfiguration::default().summary_scale(AxisScale::Logarithmic)),
+    );
+
+    c.bench_functions(
+        "string with many special chars",
+        vec![
+            Fun::new("json_in_type", |b, i: &String| b.iter(|| i.to_json_buffer())),
+            Fun::new("serde", |b, i: &String| b.iter(|| serde_json::to_vec(i).unwrap()))
+        ],
+        "\r\n\"Zero\"\r\n\t\"\0\" is the \"null\" byte.".repeat(1024),
     );
 }
 

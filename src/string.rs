@@ -3,38 +3,10 @@ use super::JSONValue;
 use std::io;
 
 static ESCAPE_CHARS: [&'static [u8]; 0x20] = [
-    b"\\u0000",
-    b"\\u0001",
-    b"\\u0002",
-    b"\\u0003",
-    b"\\u0004",
-    b"\\u0005",
-    b"\\u0006",
-    b"\\u0007",
-    b"\\b",
-    b"\\t",
-    b"\\n",
-    b"\\u000b",
-    b"\\f",
-    b"\\r",
-    b"\\u000e",
-    b"\\u000f",
-    b"\\u0010",
-    b"\\u0011",
-    b"\\u0012",
-    b"\\u0013",
-    b"\\u0014",
-    b"\\u0015",
-    b"\\u0016",
-    b"\\u0017",
-    b"\\u0018",
-    b"\\u0019",
-    b"\\u001a",
-    b"\\u001b",
-    b"\\u001c",
-    b"\\u001d",
-    b"\\u001e",
-    b"\\u001f"
+    b"\\u0000", b"\\u0001", b"\\u0002", b"\\u0003", b"\\u0004", b"\\u0005", b"\\u0006", b"\\u0007",
+    b"\\b", b"\\t", b"\\n", b"\\u000b", b"\\f", b"\\r", b"\\u000e", b"\\u000f", b"\\u0010",
+    b"\\u0011", b"\\u0012", b"\\u0013", b"\\u0014", b"\\u0015", b"\\u0016", b"\\u0017", b"\\u0018",
+    b"\\u0019", b"\\u001a", b"\\u001b", b"\\u001c", b"\\u001d", b"\\u001e", b"\\u001f",
 ];
 
 #[inline(always)]
@@ -43,7 +15,7 @@ fn json_escaped_char(c: u8) -> Option<&'static [u8]> {
         x if x < 0x20 => Some(ESCAPE_CHARS[c as usize]),
         b'\\' => Some(&b"\\\\"[..]),
         b'\"' => Some(&b"\\\""[..]),
-        _ => None
+        _ => None,
     }
 }
 
@@ -77,11 +49,11 @@ impl<'a> JSONValue for &'a str {
 
 fn write_json_common<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-        {
-            if is_x86_feature_detected!("sse4.2") {
-                return unsafe { write_json_simd(s, w) };
-            }
+    {
+        if is_x86_feature_detected!("sse4.2") {
+            return unsafe { write_json_simd(s, w) };
         }
+    }
     write_json_nosimd(s.as_bytes(), w)
 }
 

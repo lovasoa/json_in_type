@@ -68,24 +68,9 @@ unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
 
     let bytes = s.as_bytes();
     let control_chars = _mm_setr_epi8(0, 0x1f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-    let special_chars = _mm_setr_epi8(
-        b'\\' as i8,
-        b'"' as i8,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    );
+    let slash = b'\\' as i8;
+    let quote = b'"' as i8;
+    let special_chars = _mm_setr_epi8(slash, quote, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
     let mut char_index_to_write = 0;
     let mut current_index = 0;

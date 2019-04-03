@@ -156,9 +156,22 @@ fn criterion_benchmark(c: &mut Criterion) {
             |b, i| b.iter(|| i.json_in_type()),
             (0..12).step_by(4).map(BenchStr::new),
         )
-            .with_function("serde", |b, i| b.iter(|| i.serde()))
-            .throughput(|i| Throughput::Bytes(i.bytes_len() as u32))
-            .plot_config(PlotConfiguration::default().summary_scale(AxisScale::Logarithmic)),
+        .with_function("serde", |b, i| b.iter(|| i.serde()))
+        .throughput(|i| Throughput::Bytes(i.bytes_len() as u32))
+        .plot_config(PlotConfiguration::default().summary_scale(AxisScale::Logarithmic)),
+    );
+
+    c.bench_functions(
+        "string with many special chars",
+        vec![
+            Fun::new("json_in_type", |b, i: &String| {
+                b.iter(|| i.to_json_buffer())
+            }),
+            Fun::new("serde", |b, i: &String| {
+                b.iter(|| serde_json::to_vec(i).unwrap())
+            }),
+        ],
+        "\r\n\"Zero\"\r\n\t\"\0\" is the \"null\" byte.".repeat(1024),
     );
 }
 

@@ -1,31 +1,36 @@
 //! Serialization to JSON strings like `"hello world \n"`
-
+use super::JSONValue;
 use std::io;
 
-use super::JSONValue;
+static ESCAPE_CHARS: [&'static [u8]; 0x20] = [
+    b"\\u0000", b"\\u0001", b"\\u0002", b"\\u0003", b"\\u0004", b"\\u0005", b"\\u0006", b"\\u0007",
+    b"\\b", b"\\t", b"\\n", b"\\u000b", b"\\f", b"\\r", b"\\u000e", b"\\u000f", b"\\u0010",
+    b"\\u0011", b"\\u0012", b"\\u0013", b"\\u0014", b"\\u0015", b"\\u0016", b"\\u0017", b"\\u0018",
+    b"\\u0019", b"\\u001a", b"\\u001b", b"\\u001c", b"\\u001d", b"\\u001e", b"\\u001f",
+];
 
-struct EscapeChar(u8);
-
-impl EscapeChar {
-    fn write<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-        let c = self.0;
-        match c {
-            b'"' => w.write_all(b"\\\""),
-            b'\\' => w.write_all(b"\\\\"),
-            b'\n' => w.write_all(b"\\n"),
-            b'\r' => w.write_all(b"\\r"),
-            b'\t' => w.write_all(b"\\t"),
-            _ => write!(w, "\\u{:04x}", u32::from(c)),
-        }
-    }
-}
+// This bitset represents which bytes can be copied as-is to a JSON string (0)
+// And which one need to be escaped (1)
+static NEEDS_ESCAPING_BITSET: [u64; 4] = [
+    0b0000000000000000_0000000000000100_1111111111111111_1111111111111111,
+    0b1000000000000000_0000000000000000_0001000000000000_0000000000000000,
+    0b0000000000000000_0000000000000000_0000000000000000_0000000000000000,
+    0b0000000000000000_0000000000000000_0000000000000000_0000000000000000,
+];
 
 #[inline(always)]
-fn json_escaped_char(c: u8) -> Option<EscapeChar> {
-    if c > 0x1F && c != b'"' && c != b'\\' {
+fn json_escaped_char(c: u8) -> Option<&'static [u8]> {
+    let bitset_value = NEEDS_ESCAPING_BITSET[(c / 64) as usize] & (1 << (c % 64));
+    if bitset_value == 0 {
         None
     } else {
-        Some(EscapeChar(c))
+        Some(match c {
+            x if x < 0x20 => ESCAPE_CHARS[c as usize],
+            b'\\' => &b"\\\\"[..],
+            b'\"' => &b"\\\""[..],
+            0x7F => &b"\\u007f"[..],
+            _ => unreachable!(),
+        })
     }
 }
 
@@ -39,7 +44,7 @@ impl JSONValue for char {
     fn write_json<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         w.write_all(b"\"")?;
         if let Some(escaped) = json_escaped_char(*self as u8) {
-            escaped.write(w)?;
+            w.write_all(escaped)?;
         } else {
             write!(w, "{}", self)?;
         }
@@ -59,11 +64,11 @@ impl<'a> JSONValue for &'a str {
 
 fn write_json_common<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-    {
-        if is_x86_feature_detected!("sse4.2") {
-            return unsafe { write_json_simd(s, w) };
+        {
+            if is_x86_feature_detected!("sse4.2") {
+                return unsafe { write_json_simd(s, w) };
+            }
         }
-    }
     write_json_nosimd(s.as_bytes(), w)
 }
 
@@ -78,24 +83,10 @@ unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
 
     let bytes = s.as_bytes();
     let control_chars = _mm_setr_epi8(0, 0x1f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-    let special_chars = _mm_setr_epi8(
-        b'\\' as i8,
-        b'"' as i8,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    );
+    let slash = b'\\' as i8;
+    let quote = b'"' as i8;
+    let del = 0x7F as i8;
+    let special_chars = _mm_setr_epi8(slash, quote, del, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
     let mut char_index_to_write = 0;
     let mut current_index = 0;
@@ -114,7 +105,7 @@ unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
             );
             let idx_special_chars = _mm_cmpestri(
                 special_chars,
-                2,
+                3,
                 chunk,
                 current_chunk_len as i32,
                 _SIDD_CMP_EQUAL_ANY,
@@ -137,7 +128,7 @@ fn write_json_nosimd<W: io::Write>(bytes: &[u8], w: &mut W) -> io::Result<()> {
     for (i, &c) in bytes.iter().enumerate() {
         if let Some(escaped) = json_escaped_char(c) {
             w.write_all(&bytes[char_index_to_write..i])?;
-            escaped.write(w)?;
+            w.write_all(escaped)?;
             char_index_to_write = i + 1;
         }
     }
@@ -184,6 +175,10 @@ mod tests {
         assert_eq!(
             r#""0123456789\u001eabcde""#,
             "0123456789\x1Eabcde".to_json_string()
+        );
+        assert_eq!(
+            r#""0123456789\u007fabcde""#,
+            "0123456789\x7Fabcde".to_json_string()
         );
     }
 

@@ -90,49 +90,55 @@ unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
 
     let mut char_index_to_write = 0;
     let mut current_index = 0;
-    for chunk_bytes in bytes.chunks(VECTOR_SIZE) {
-        let current_chunk_len = chunk_bytes.len();
-        let needs_write_at = if current_chunk_len != VECTOR_SIZE {
-            0
-        } else {
-            let chunk = _mm_loadu_si128(chunk_bytes.as_ptr() as *const _);
-            let idx_control_chars = _mm_cmpestri(
-                control_chars,
-                2,
-                chunk,
-                current_chunk_len as i32,
-                _SIDD_CMP_RANGES,
-            );
-            let idx_special_chars = _mm_cmpestri(
-                special_chars,
-                3,
-                chunk,
-                current_chunk_len as i32,
-                _SIDD_CMP_EQUAL_ANY,
-            );
-            idx_special_chars.min(idx_control_chars) as usize
-        };
+    for chunk_bytes in bytes.chunks_exact(VECTOR_SIZE) {
+        let chunk = _mm_loadu_si128(chunk_bytes.as_ptr() as *const _);
+        let idx_control_chars = _mm_cmpestri(
+            control_chars,
+            2,
+            chunk,
+            VECTOR_SIZE as i32,
+            _SIDD_CMP_RANGES,
+        );
+        let idx_special_chars = _mm_cmpestri(
+            special_chars,
+            3,
+            chunk,
+            VECTOR_SIZE as i32,
+            _SIDD_CMP_EQUAL_ANY,
+        );
+        let needs_write_at = idx_special_chars.min(idx_control_chars) as usize;
         if needs_write_at != VECTOR_SIZE {
             let end_idx = current_index + needs_write_at;
             w.write_all(&bytes[char_index_to_write..end_idx])?;
             write_json_nosimd(&chunk_bytes[needs_write_at..], w)?;
-            char_index_to_write = current_index + current_chunk_len;
+            char_index_to_write = current_index + VECTOR_SIZE;
         }
-        current_index += current_chunk_len;
+        current_index += VECTOR_SIZE;
+    }
+    write_json_nosimd_prevalidated(&bytes, char_index_to_write, current_index, w)
+}
+
+fn write_json_nosimd_prevalidated<W: io::Write>(
+    bytes: &[u8],
+    char_index_to_write: usize,
+    current_index: usize,
+    w: &mut W,
+) -> io::Result<()> {
+    let mut char_index_to_write = char_index_to_write;
+    let mut current_index = current_index;
+    for &c in bytes[current_index..].iter() {
+        if let Some(escaped) = json_escaped_char(c) {
+            w.write_all(&bytes[char_index_to_write..current_index])?;
+            w.write_all(escaped)?;
+            char_index_to_write = current_index + 1;
+        }
+        current_index += 1;
     }
     w.write_all(&bytes[char_index_to_write..])
 }
 
 fn write_json_nosimd<W: io::Write>(bytes: &[u8], w: &mut W) -> io::Result<()> {
-    let mut char_index_to_write = 0;
-    for (i, &c) in bytes.iter().enumerate() {
-        if let Some(escaped) = json_escaped_char(c) {
-            w.write_all(&bytes[char_index_to_write..i])?;
-            w.write_all(escaped)?;
-            char_index_to_write = i + 1;
-        }
-    }
-    w.write_all(&bytes[char_index_to_write..])
+    write_json_nosimd_prevalidated(bytes, 0, 0, w)
 }
 
 impl<'a> JSONString for &'a str {}

@@ -108,10 +108,14 @@ unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
         );
         let needs_write_at = idx_special_chars.min(idx_control_chars) as usize;
         if needs_write_at != VECTOR_SIZE {
-            let end_idx = current_index + needs_write_at;
-            w.write_all(&bytes[char_index_to_write..end_idx])?;
-            write_json_nosimd(&chunk_bytes[needs_write_at..], w)?;
-            char_index_to_write = current_index + VECTOR_SIZE;
+            let chunk_end = current_index + VECTOR_SIZE;
+            write_json_nosimd_prevalidated(
+                &bytes[..chunk_end],
+                char_index_to_write,
+                current_index + needs_write_at,
+                w,
+            )?;
+            char_index_to_write = chunk_end;
         }
         current_index += VECTOR_SIZE;
     }

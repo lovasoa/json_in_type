@@ -72,7 +72,7 @@ fn write_json_common<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
                 return unsafe { write_json_simd(s, w) };
             }
         }
-    write_json_nosimd(s.as_bytes(), w)
+    write_json_nosimd_prevalidated(s.as_bytes(), 0, 0, w)
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -142,10 +142,6 @@ fn write_json_nosimd_prevalidated<W: io::Write>(
         current_index += 1;
     }
     w.write_all(&bytes[char_index_to_write..])
-}
-
-fn write_json_nosimd<W: io::Write>(bytes: &[u8], w: &mut W) -> io::Result<()> {
-    write_json_nosimd_prevalidated(bytes, 0, 0, w)
 }
 
 impl<'a> JSONString for &'a str {}

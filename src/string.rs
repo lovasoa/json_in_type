@@ -2,7 +2,7 @@
 use super::JSONValue;
 use std::io;
 
-static ESCAPE_CHARS: [&'static [u8]; 0x20] = [
+static ESCAPE_CHARS: [&[u8]; 0x20] = [
     b"\\u0000", b"\\u0001", b"\\u0002", b"\\u0003", b"\\u0004", b"\\u0005", b"\\u0006", b"\\u0007",
     b"\\b", b"\\t", b"\\n", b"\\u000b", b"\\f", b"\\r", b"\\u000e", b"\\u000f", b"\\u0010",
     b"\\u0011", b"\\u0012", b"\\u0013", b"\\u0014", b"\\u0015", b"\\u0016", b"\\u0017", b"\\u0018",

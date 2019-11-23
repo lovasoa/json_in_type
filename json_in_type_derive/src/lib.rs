@@ -115,7 +115,7 @@ fn write_unnamed_fields(
 
 fn write_fields(
     fields: &syn::Fields,
-) -> Box<quote::ToTokens> {
+) -> Box<dyn quote::ToTokens> {
     match fields {
         syn::Fields::Named(fields_named) =>
             Box::new(write_named_fields(fields_named)),

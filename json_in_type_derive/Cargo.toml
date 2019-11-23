@@ -16,4 +16,4 @@ syn = "0.14.4"
 quote = "0.6.3"
 
 [dev-dependencies]
-json_in_type = "0.1"
+json_in_type = "1.1"

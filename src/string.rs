@@ -72,7 +72,8 @@ fn write_json_common<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
                 return unsafe { write_json_simd(s, w) };
             }
         }
-    write_json_nosimd_prevalidated(s.as_bytes(), 0, 0, w)
+    write_json_nosimd_prevalidated(s.as_bytes(), 0, 0, w)?;
+    Ok(())
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -112,17 +113,18 @@ unsafe fn write_json_simd<W: io::Write>(s: &str, w: &mut W) -> io::Result<()> {
         let needs_write_at = idx_special_chars.min(idx_control_chars) as usize;
         if needs_write_at != VECTOR_SIZE {
             let chunk_end = current_index + VECTOR_SIZE;
-            write_json_nosimd_prevalidated(
+            let written = write_json_nosimd_prevalidated(
                 &bytes[..chunk_end],
                 char_index_to_write,
                 current_index + needs_write_at,
                 w,
             )?;
-            char_index_to_write = chunk_end;
+            char_index_to_write += written;
         }
         current_index += VECTOR_SIZE;
     }
-    write_json_nosimd_prevalidated(&bytes, char_index_to_write, current_index, w)
+    write_json_nosimd_prevalidated(&bytes, char_index_to_write, current_index, w)?;
+    Ok(())
 }
 
 fn write_json_nosimd_prevalidated<W: io::Write>(
@@ -130,18 +132,33 @@ fn write_json_nosimd_prevalidated<W: io::Write>(
     char_index_to_write: usize,
     current_index: usize,
     w: &mut W,
-) -> io::Result<()> {
+) -> io::Result<usize> {
     let mut char_index_to_write = char_index_to_write;
     let mut current_index = current_index;
+    let mut written = 0;
     for &c in bytes[current_index..].iter() {
         if let Some(escaped) = json_escaped_char(c) {
-            w.write_all(&bytes[char_index_to_write..current_index])?;
+            let prefix = &bytes[char_index_to_write..current_index];
+            w.write_all(prefix)?;
             w.write_all(escaped)?;
+            written += prefix.len() + 1;
             char_index_to_write = current_index + 1;
         }
         current_index += 1;
     }
-    w.write_all(&bytes[char_index_to_write..])
+    let mut bytes = &bytes[char_index_to_write..];
+    while !bytes.is_empty() {
+        match w.write(bytes) {
+            Ok(0) => break,
+            Ok(n) => {
+                written += n;
+                bytes = &bytes[n..];
+            }
+            Err(ref err) if err.kind() == io::ErrorKind::Interrupted => continue,
+            Err(err) => return Err(err),
+        }
+    }
+    Ok(written)
 }
 
 impl<'a> JSONString for &'a str {}
